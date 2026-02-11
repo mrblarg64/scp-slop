@@ -1,0 +1,10 @@
+#ifndef SCP_CONST_H
+
+#define SCP_CONST_H
+
+#define MODEL_TYPE_PLAYER 0
+
+#define PLAYER_TYPE_SCIENTIST 0
+#define PLAYER_TYPE_PEANUT 1
+
+#endif

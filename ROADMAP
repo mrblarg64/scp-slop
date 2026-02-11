@@ -1,0 +1,1 @@
+the plan is to use ODE for physic, libopus for realtime network audio encode/decode, alure/openal for audio.
