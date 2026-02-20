@@ -2,7 +2,7 @@
 
 #define SCP_MODEL_H
 
-#include <GL/gl.h>
+#include <GLAD/gl.h>
 #include "shaders.h"
 
 struct scpmodel
