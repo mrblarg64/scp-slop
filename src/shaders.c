@@ -1,5 +1,6 @@
 #include "shaders.h"
 #include <stdlib.h>
+#include "errormsg.h"
 
 const char *fshaders[] = {"#version 330\
 				       \

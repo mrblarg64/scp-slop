@@ -2,7 +2,7 @@
 
 #define SCP_SHADER_H
 
-#include <glad/gl.h>
+#include <glad/glad.h>
 #include <stddef.h>
 
 #define SCP_SHADER_COUNT 1

@@ -2,7 +2,7 @@
 
 #define SCP_RENDER_STRUCTS_H
 
-#include <GLAD/gl.h>
+#include <glad/glad.h>
 
 struct scpcam
 {

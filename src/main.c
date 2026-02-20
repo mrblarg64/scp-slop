@@ -1,11 +1,12 @@
-#include <GLFW/glfw3.h>
+
 #include <stdio.h>
 
+#include "render.h"
 #include "errormsg.h"
 #include "loadb3d.h"
 #include "camera.h"
 #include "player.h"
-
+#include <GLFW/glfw3.h>
 void keyCallbackFunction(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
 	switch (key)
