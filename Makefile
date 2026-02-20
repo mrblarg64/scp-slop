@@ -9,10 +9,14 @@ CC=gcc
 
 SRCS = $(wildcard src/*.c)
 OBJS = $(SRCS:.c=.o)
+DEPENDS = $(SRCS:.c=.d)
 
 scp: $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) -o scp
 OBJS: $(SRCS)
 	$(CC) $(CFLAGS) -c -I src -o $@ $(SRCS)
+
+-include $(DEPENDS)
+
 clean:
 	$(RM) scp src/*.o
