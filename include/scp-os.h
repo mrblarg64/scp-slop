@@ -18,6 +18,7 @@
 
 #define ERRNO_T DWORD
 #define SOCKET_T SOCKET
+#define FILE_T HANDLE
 #define NEWLINE "\r\n"
 #define U64_PF "%llu"
 #define SSO_CAST (const char*)
@@ -25,11 +26,11 @@
 #define B_SHUT_WR SD_SEND
 
 #if (WINVER >= 0x0600)
-QOS_FLOWID qosfid = 0;
+extern QOS_FLOWID qosfid = 0;
 #endif
 
-HANDLE stdouth;
-DWORD bout;
+extern HANDLE stdouth;
+extern DWORD bout;
 #define FASTPRINT(str) (WriteFile(stdouth, str, sizeof(str) - 1, &bout, NULL))
 
 #define SOCKERROR(str) do {			\
@@ -60,8 +61,11 @@ ExitProcess(wsaerrno);\
 
 #define BERNTRNSFR_LINUX_SENDFILE_MAX 2147483646
 
-HANDLE fd;
-WSADATA wsd;
+extern WSADATA wsd;
+
+extern HANDLE hh;
+
+
 #else
 
 #define _GNU_SOURCE
@@ -81,8 +85,13 @@ WSADATA wsd;
 #include <sched.h>
 #include <errno.h>
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
 #define ERRNO_T int
 #define SOCKET_T int
+#define FILE_T int
 #define NEWLINE "\n"
 #define U64_PF "%'lu"
 #define SSO_CAST (void*)
@@ -110,13 +119,16 @@ if (send(sock, buf, size, MSG_MORE ) != sizeof(uint64_t))\
 
 #define CLOSEFILE(fd) (close(fd))
 
-int fd;
-
 #define BERNTRNSFR_LINUX_SENDFILE_MAX 0x7ffff000
 
-const struct sigaction siga = {.sa_handler = SIG_IGN};
+extern const struct sigaction siga;
 
 
 #endif
+
+void osinit();
+void *scpmalloc(size_t s);
+FILE_T scpopen(char *fname);
+uint64_t scpgetfsize(FILE_T fd);
 
 #endif

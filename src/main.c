@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 
+#include "scp-os.h"
 #include "render.h"
 #include "errormsg.h"
 #include "loadb3d.h"
@@ -87,6 +88,9 @@ int main(int argc, char *argv[])
 	GLFWwindow *window;
 	
 	window = openWindow();
+
+	osinit();
+	
 	mainloop(window);
 	cleanUp();
 	return 0;

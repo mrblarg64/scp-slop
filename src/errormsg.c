@@ -1,13 +1,9 @@
-#ifdef _WIN32
-#include <MessageBoxW.h> //correct the windows header file once I know what it is
-#else
-#include <stdio.h>
-#endif
+#include "scp-os.h"
 
 void errormsg(char *msg)
 {
 	#ifdef _WIN32
-	MessageBoxW(NULL, msg, "SCP Error", 0);
+	MessageBox(NULL, msg, "SCP Error", MB_SYSTEMMODAL | MB_OK | MB_ICONERROR);
 	#else
 	printf("%s\n",msg);
 	#endif
