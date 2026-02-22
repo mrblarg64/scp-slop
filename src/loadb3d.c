@@ -6,12 +6,13 @@
 
 #include <assert.h>
 
+#include "scp-os.h"
 #include "model.h"
 
 struct scpmodel *loadb3d(char *file, char modeltype)
 {
-	FILE *fp=NULL;
-	unsigned fsize;
+	FILE_T fd;
+        uint64_t fsize;
 	char *finram;
 	unsigned val;
 	unsigned rootchunksize;
@@ -42,36 +43,17 @@ struct scpmodel *loadb3d(char *file, char modeltype)
 	//unsigned glibuf;
 	struct scpmodel *retval=NULL;
 
-	fp=fopen(file, "r");
-	if (fp==NULL)
-	{
-		printf("bloadbd3d() failed to open file \"%s\"\n",file);
-		return retval;
-	}
-	fseek(fp,0,SEEK_END);
-	fsize = ftell(fp);
-	fseek(fp,0,SEEK_SET);
+	fd = scpopen(file);
+	fsize = scpgetfsize(fd);
 
 	if (fsize<8)
 	{
 		printf("file is too small to be genuine\n");
-		fclose(fp);
+		CLOSEFILE(fd);
 		return retval;
 	}
-        finram = malloc(fsize);
-	if (!finram)
-	{
-		printf("malloc finram failed\n");
-		return retval;
-	}
-	if (fread(finram,1,fsize,fp)!=fsize)
-	{
-		printf("failed to read whole file\n");
-		fclose(fp);
-		free(finram);
-		return retval;
-	}
-	fclose(fp);
+        finram = scpmapfile(fd, fsize);
+	CLOSEFILE(fd);
 
 	#ifdef __ORDER_LITTLE_ENDIAN__
 	val = 0x44334242;
@@ -82,7 +64,7 @@ struct scpmodel *loadb3d(char *file, char modeltype)
 	if ((*((unsigned*)(finram)))!=val)
 	{
 		printf("no b3d header detectected\nexpected: %x\ngot:      %x\n",val,(*((unsigned*)(finram))));
-		free(finram);
+		scpunmapfile(finram, fsize);
 		return retval;
 	}
 	#ifdef __ORDER_LITTLE_ENDIAN__
@@ -93,8 +75,8 @@ struct scpmodel *loadb3d(char *file, char modeltype)
 	#endif
 	if ((rootchunksize+8)>fsize)
 	{
-		printf("the file seems to be incomplete, the header reports a size of %u bytes but the file is %u bytes\n",(rootchunksize+8), fsize);
-		free(finram);
+		printf("the file seems to be incomplete, the header reports a size of %'u bytes but the file is " U64_PF " bytes\n",(rootchunksize+8), fsize);
+		scpunmapfile(finram, fsize);
 		return retval;
 	}
 
@@ -200,43 +182,43 @@ struct scpmodel *loadb3d(char *file, char modeltype)
 						fpos+=16;
 						mallocfactor = ((subsubchunkend-fpos)/(sizeof(float)))/(3+(+(vflags&1)*3)+(((vflags>>1)&1)*4)+(vtcords*vtcordssize));
 						vertslen = sizeof(float) * 3 * mallocfactor;
-						verts = malloc(vertslen);
+						verts = SCPMALLOC(vertslen);
 						if (!verts)
 						{
 							printf("malloc verts failed\n");
-							free(finram);
+							scpunmapfile(finram, fsize);
 							return retval;
 						}
 						if (vflags&1)
 						{
 							vnormslen = sizeof(float) * 3 * mallocfactor;
-							vnorms = malloc(vnormslen);
+							vnorms = SCPMALLOC(vnormslen);
 							if (!vnorms)
 							{
 								printf("malloc vnorms failed\n");
-								free(verts);
-								free(finram);
+								SCPFREE(verts);
+								scpunmapfile(finram, fsize);
 								return retval;
 							}
 						}
 						if (vflags&2)
 						{
 							vcolourlen = sizeof(float) * 4 * mallocfactor;
-							vcolour = malloc(vcolourlen);
+							vcolour = SCPMALLOC(vcolourlen);
 							if (!vcolour)
 							{
 								printf("malloc vcolour failed");
 								if (vnorms)
 								{
-									free(vnorms);
+									SCPFREE(vnorms);
 								}
-								free(verts);
-								free(finram);
+								SCPFREE(verts);
+								scpunmapfile(finram, fsize);
 								return retval;
 							}
 						}
 						vtcorddatalen = sizeof(float) * (vtcords*vtcordssize) * mallocfactor;
-						vtcorddata = malloc(vtcorddatalen);
+						vtcorddata = SCPMALLOC(vtcorddatalen);
 						printf("vtcords: %u\nvtcordssize: %u\n",vtcords,vtcordssize);
 						reg=0;
 						while (fpos!=subsubchunkend)
@@ -305,7 +287,7 @@ struct scpmodel *loadb3d(char *file, char modeltype)
 						//;
 						assert((subsubchunkend-fpos)==(((subsubchunkend - fpos)/sizeof(unsigned)))*sizeof(unsigned));
 						trigslen = subsubchunkend-fpos;
-						trigs = malloc(trigslen);
+						trigs = SCPMALLOC(trigslen);
 						memcpy(trigs, &finram[fpos], (subsubchunkend-fpos));
 						fpos = subsubchunkend;
 						break;
@@ -331,10 +313,10 @@ struct scpmodel *loadb3d(char *file, char modeltype)
 		}
 	}
 
-	retval=malloc(sizeof(struct scpmodel));
+	retval=SCPMALLOC(sizeof(struct scpmodel));
 	if (!retval)
 	{
-		free(finram);
+		scpunmapfile(finram, fsize);
 		//todo free other things
 		//this leaks memory if malloc failes
 		printf("loadb3d() scpmodel malloc() failed\n");
@@ -342,10 +324,10 @@ struct scpmodel *loadb3d(char *file, char modeltype)
 		exit(1);
 	}
 
-	retval->sprog = malloc(sizeof(struct scpshader));
+	retval->sprog = SCPMALLOC(sizeof(struct scpshader));
 	if (!retval->sprog)
 	{
-		free(finram);
+		scpunmapfile(finram, fsize);
 		//todo free other things
 		//this leaks memory if malloc failes
 		printf("loadb3d() scpmodel malloc() failed\n");
@@ -381,17 +363,17 @@ struct scpmodel *loadb3d(char *file, char modeltype)
 	glBindVertexArray(0);
 	
 	printf("finished, freeing finram and returning\n");
-	free(finram);
-	free(verts);
+	scpunmapfile(finram, fsize);
+	SCPFREE(verts);
 	if (vnorms)
 	{
-		free(vnorms);
+		SCPFREE(vnorms);
 	}
 	if (vcolour)
 	{
-		free(vcolour);
+		SCPFREE(vcolour);
 	}
-	free(vtcorddata);
-	free(trigs);
+	SCPFREE(vtcorddata);
+	SCPFREE(trigs);
 	return retval;
 }

@@ -39,6 +39,16 @@ printf(str " 0x%x" NEWLINE, wsaerrno);	\
 ExitProcess(wsaerrno);\
 } while (0)
 
+#define WINERROR(str) do {			\
+	myerrno = GetLastError();		\
+	errormsg(str);		\
+	ExitProcess(myerrno);			\
+	} while (0)
+	
+
+#define SCPMALLOC(size) HeapAlloc(hh, HEAP_NO_SERIALIZE, size)
+#define SCPFREE(data) HeapFree(hh, HEAP_NO_SERIALIZE, data)
+
 #define SEND_MSG_MORE(inbuf, size) do {\
 		wsab.len = size;\
 		wsab.buf = (char *)inbuf;				\
@@ -98,6 +108,10 @@ extern HANDLE hh;
 #define B_SHUT_RD SHUT_RD
 #define B_SHUT_WR SHUT_WR
 
+#define SCP_OS_ERROR_MAX_LENGTH 160
+
+
+
 #define FASTPRINT(str) ((void)!write(STDOUT_FILENO, str, sizeof(str) - 1))
 
 #define SOCKERROR(str) do {			\
@@ -105,6 +119,17 @@ myerrno = errno;\
 perror(str);\
 _exit(myerrno);\
 } while (0)
+
+#define POSIXERROR(str) do {\
+myerrno = errno;\
+errmsg = __builtin_alloca(SCP_OS_ERROR_MAX_LENGTH);\
+__builtin_sprintf(errmsg, str ": %s\n", strerror(myerrno));\
+errormsg(errmsg);					   \
+FASTEXIT(myerrno);					   \
+} while (0)
+
+#define SCPMALLOC(size) malloc(size)
+#define SCPFREE(data) free(data)
 
 #define SEND_MSG_MORE(buf, size) do {\
 if (send(sock, buf, size, MSG_MORE ) != sizeof(uint64_t))\
@@ -127,8 +152,11 @@ extern const struct sigaction siga;
 #endif
 
 void osinit();
-void *scpmalloc(size_t s);
 FILE_T scpopen(char *fname);
 uint64_t scpgetfsize(FILE_T fd);
+unsigned char scpread(FILE_T fd, void *buf, unsigned size);
+unsigned char scpwrite(FILE_T fd, void *buf, unsigned size);
+void *scpmapfile(FILE_T fd, uint64_t mapsize);
+void scpunmapfile(void *map, uint64_t length);
 
 #endif
