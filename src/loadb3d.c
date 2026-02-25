@@ -92,8 +92,8 @@ struct scpmodel *loadb3d(char *file, char modeltype)
 		case 0x54455853:
 			#endif
 			//TEXS
-			//ignore textures for now
-			printf("ignoring textures for now\n");
+			//Doesn't seem to be an important chunk
+		        printf("file name %s\n",*((char*)&finram[fpos + 8]));
 			fpos+=4;
 			#ifdef __ORDER_LITTLE_ENDIAN__
 			fpos +=4 + *((unsigned*)(&finram[fpos]));
@@ -107,7 +107,7 @@ struct scpmodel *loadb3d(char *file, char modeltype)
 		case 0x42525553:
 			#endif
 			//BRUS
-			//ignore brushes for now
+			//The hell is a brush used for? 
 			printf("ignoring brushes for now\n");
 			fpos+=4;
 			#ifdef __ORDER_LITTLE_ENDIAN__
@@ -122,9 +122,7 @@ struct scpmodel *loadb3d(char *file, char modeltype)
 		case 0x4e4f4445:
 			#endif
 			//NODE
-			//ignore nodes for now
-			printf("ignoring nodes for now\n");
-			fpos+=4;
+		       	fpos+=4;
 			#ifdef __ORDER_LITTLE_ENDIAN__
 			chunkend =fpos +4 + *((unsigned*)(&finram[fpos]));
 			#else

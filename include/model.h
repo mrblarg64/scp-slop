@@ -1,5 +1,4 @@
 #ifndef SCP_MODEL_H
-
 #define SCP_MODEL_H
 
 #include <glad/glad.h>
