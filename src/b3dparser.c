@@ -219,7 +219,7 @@ int NODEparser(char* mem, unsigned size, VRTS* VatNode, int nodecalls){
 
 
 /*
- * parser will send data to gpu as a side effect
+ * parser will load info into gpu as a side effect
  * retval is a struct that needs to be filled out
  * returns status as int, negative if error, 0 for good
  */
@@ -340,5 +340,5 @@ int B3dLoader(char* file, struct scpmodel* retval){
 
   // everything is parsed now need to load info into gpu
   
-  
+  return 0;
 }

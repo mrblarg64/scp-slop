@@ -1,0 +1,146 @@
+import struct
+import glob
+from pathlib import Path
+
+class B3DBuilder:
+    def __init__(self):
+        self.data = bytearray()
+        self.chunk_stack = []
+        self.size = 0
+        self.chunk_size = 0
+    
+
+    def parseTEXS(self):
+        print(self.chunk_stack)
+        self.data += self.chunk_stack.pop(0)[1:5]
+        for i in range(len(self.chunk_stack) / 8):
+            self.chunk_size += len(self.chunk_stack[i * 8]) + 1
+            self.chunk_size += 28 # 28 bytes for storing the data
+            
+        self.size += chunk_size
+        self.data += struct.pack('<i', self.chunk_size)
+        self.chunk_size = 0
+
+        for i in range(len(chunk_stack) / 8):
+            self.data += chunk_stack.pop(0)
+            self.data += struct.pack('<i', int(chunk_stack.pop(0)))
+            self.data += struct.pack('<i', int(chunk_stack.pop(0)))
+            self.data += struct.pack('<f', float(chunk_stack.pop(0)))
+            self.data += struct.pack('<f', float(chunk_stack.pop(0)))
+            self.data += struct.pack('<f', float(chunk_stack.pop(0)))
+            self.data += struct.pack('<f', float(chunk_stack.pop(0)))
+            self.data += struct.pack('<f', float(chunk_stack.pop(0)))
+
+        print(self.chunk_stack) # should be done with parsing
+        
+                  
+    def parseFile(self, filename):
+        f = open("filename", "r", encoding='ascii')
+        content = f.read()
+        f.close()
+        cl = content.split()
+
+        print(cl)
+
+        #load bb3d shit into byte array
+        self.data += cl.pop(0)[1:5]
+        self.data += strcut.pack('<i', 1) # size of b3d file
+        self.data += struct.pack('<i', int(cl.pop(0)))
+
+        # now we do some pattern matching
+        stop = false
+        
+        while stop:
+            match cl[0]:
+                case '[TEXS]':
+                    while cl[0] != 'END':
+                        self.chunk_stack.append(cl.pop(0))
+                    
+
+                    self.chunk_stack.append(cl.pop(0))
+                    self.parseTEXS()
+                            
+                        
+                case '[BRUS]':
+
+                    
+                case '[NODE]':
+                    self.chunk_stack = cl[:11]
+                    cl = cl[11:]
+                    if cl[0] == '[MESH]':
+                        self.chunk_stack = cl.pop(0)
+                        
+                        
+
+                    else if cl[0] == '[BONE]':
+
+
+                    else:
+                        print("Node type unknown")
+                        return
+                        
+                        
+                        
+                        
+                    
+                case 'END':
+                    stop = True
+                
+                
+    
+    def BuildB3DFile(self, filename):
+    
+
+
+
+"""
+this is how the file sturture (b3dtext) will be set up:
+[B3DD]
+ 1
+ [TEXS]
+   name of texture file (string type)
+   1 2 (flags)
+   0.0 0.0 (x y position in float)
+   1.0 1.0 (x y scale float)
+   0.0 (rotation)
+ END
+ [NODE]
+  name of the node (string)
+   0.0 0.0 0.0
+  1.0 1.0 1.0
+  0.0 0.0 0.0 0.0
+  [MESH]
+    -1
+     [VRTS]
+       0
+       0
+       0
+       -0.5  -0.5  0.0
+       0.5 -0.5 0.0
+       0.0 0.5 0.0
+      END
+     [TRIS]
+       -1
+       0 1 2
+     END
+   END
+END
+"""
+
+file_list = glob.glob('*.b3dtext')
+
+# is the list empty
+if not file_list:
+    print("there is no b3dtext files to convert")
+
+
+for b3d_text_file in file_list:
+    # does the .b3d exist or not?
+    b3dfile = b3d_text_file[:-8] + '.b3d'
+    print(b3dfile)
+    if !Path(b3dfile).exists():
+        # time to create a b3dfile
+        builder = B3Dbuilder()
+        builder.parsefile()
+    
+    

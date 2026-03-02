@@ -1,4 +1,5 @@
 #ifndef RENDER_H
+#define RENDER_H
 
 #include "player.h"
 #include "camera.h"
