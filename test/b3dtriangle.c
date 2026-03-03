@@ -6,6 +6,14 @@
  Program assumes the machine is little endian as the
 file needs to be little endian */
 
+
+/*
+ Doing this by hand is so fucking painful
+ therefore there is a python script to
+create .b3d files. I don't trust the
+below code
+*/
+
 int main() {
   unsigned char* data[160];
   int32_t tempi;
@@ -54,7 +62,7 @@ int main() {
   data[72] = 'S';
   data[73] = 'H';
 
-  tempi = 84; // size of mesh node
+  tempi = 68; // size of mesh node
   memcpy(&data[74], &tempi, 4);
   
   tempi = -1;
@@ -67,7 +75,7 @@ int main() {
   data[84] = 'T';
   data[85] = 'S';
 
-  tempi = 72; // size of VRTS chunk 68 0r 72
+  tempi = 56; 
   memcpy(&data[86], &tempi, 4);
 
   memcpy(&data[90], vrts_flags, 12);

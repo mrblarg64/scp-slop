@@ -7,18 +7,18 @@ class B3DBuilder:
         self.data = bytearray()
         self.chunk_sizes = []
         self.chunkp = []
-        self.bytesin = 0
+        self.bytein = 0
 
 
         
                   
     def parseFile(self, filename):
-        f = open("filename", "r", encoding='ascii')
+        f = open(filename, "r", encoding='ascii')
         content = f.read()
         f.close()
         cl = content.split()
 
-        print(cl)
+       # print(cl)
 
         #load bb3d shit into byte array
         self.data += b'B3DD'
@@ -27,10 +27,10 @@ class B3DBuilder:
 
         # we need to store the location of the size of the b3d file,
         # which is 5 bytes in
-        self.chunkp.append(4)
         self.bytein += 12
+        self.chunk_sizes.append(0)
 
-        for elem in cl:
+        for elem in cl[2:]:
             try:
                 int(elem)
             except ValueError:
@@ -45,7 +45,7 @@ class B3DBuilder:
                             self.chunkp.append(self.bytein)
                             self.chunk_sizes.append(0)
                             # store dummy size
-                            self.data += struct.pack('<i', 1)
+                            self.data += struct.pack('<i', -1)
                             self.bytein += 4
                             
 
@@ -107,7 +107,26 @@ class B3DBuilder:
                             # store dummy size
                             self.data += struct.pack('<i', 1)
                             self.bytein += 4
-                            
+
+                        case '[NODE]':
+                            self.data += b'NODE'
+                            self.bytein += 4
+                            self.chunkp.append(self.bytein)
+                            self.chunk_sizes.append(0)
+                            # store dummy size
+                            self.data += struct.pack('<i', 1)
+                            self.bytein += 4
+
+
+                        case '[MESH]':
+                            self.data += b'MESH'
+                            self.bytein += 4
+                            self.chunkp.append(self.bytein)
+                            self.chunk_sizes.append(0)
+                            # store dummy size
+                            self.data += struct.pack('<i', 1)
+                            self.bytein += 4
+                        
 
                         case 'END':
                             # have a size of chunk, could be sub or not
@@ -119,9 +138,10 @@ class B3DBuilder:
                             
 
                         case string_name:
+                            #print(string_name)
                             # name for some chunk
                             string_length = len(string_name) + 1
-                            self.byte_sizes[-1] += string_length
+                            self.chunk_sizes[-1] += string_length
                             self.data += string_name.encode("ascii")
                             self.bytein += string_length
                         
@@ -137,9 +157,10 @@ class B3DBuilder:
                 self.chunk_sizes[-1] += 4
                 self.bytein += 4
 
-            # fill in total chunk size
-            size = chunk_sizes.pop()
-            self.data[4:8] = struct.pack('<i', size)
+        #print("checking control flow")
+        # fill in total chunk size
+        size = self.chunk_sizes.pop()
+        self.data[4:8] = struct.pack('<i', size)
             
                 
     
@@ -157,24 +178,24 @@ this is how the file sturture (b3dtext) will be set up:
  [TEXS]
    name of texture file (string type)
    1 2 (flags)
-   0.0 0.0 (x y position in float)
-   1.0 1.0 (x y scale float)
-   0.0 (rotation)
+   0.0f 0.0f (x y position in float)
+   1.0f 1.0f (x y scale float)
+   0.0f (rotation)
  END
  [NODE]
   name of the node (string)
-   0.0 0.0 0.0
-  1.0 1.0 1.0
-  0.0 0.0 0.0 0.0
+   0.0f 0.0f 0.0f
+  1.0f 1.0f 1.0f
+  0.0f 0.0f 0.0f 0.0f
   [MESH]
     -1
      [VRTS]
        0
        0
        0
-       -0.5  -0.5  0.0
-       0.5 -0.5 0.0
-       0.0 0.5 0.0
+       -0.5f  -0.5f  0.0f
+       0.5f -0.5f 0.0f
+       0.0f 0.5f 0.0f
       END
      [TRIS]
        -1
@@ -184,21 +205,24 @@ this is how the file sturture (b3dtext) will be set up:
 END
 """
 
-file_list = glob.glob('*.b3dtext')
+file_list = glob.glob('*.b3dtxt')
 
 # is the list empty
 if not file_list:
-    print("there is no b3dtext files to convert")
+    print("there is no b3dtxt files to convert")
 
 
 for b3d_text_file in file_list:
     # does the .b3d exist or not?
-    b3dfile = b3d_text_file[:-8] + '.b3d'
-    print(b3dfile)
-    if !Path(b3dfile).exists():
+    b3dfile = b3d_text_file[:-7] + '.b3d'
+    #print(b3dfile)
+    if not Path(b3dfile).exists():
         # time to create a b3dfile
-        builder = B3Dbuilder()
-        builder.parsefile(b3d_text_file)
+        builder = B3DBuilder()
+        builder.parseFile(b3d_text_file)
         builder.BuildB3DFile(b3dfile)
+
+    else:
+        print("files already exist")
     
     
