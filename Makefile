@@ -11,12 +11,24 @@ SRCS = $(wildcard src/*.c)
 OBJS = $(SRCS:.c=.o)
 DEPENDS = $(SRCS:.c=.d)
 
-scp: $(OBJS)
+scp : $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) -o scp
-OBJS: $(SRCS)
-	$(CC) $(CFLAGS) -c -I src -o $@ $(SRCS)
+
+test : b3dparser.o test1.o scp-os.o errormsg.o
+	$(CC) $^ -o test_triangle 
+
+%.o : src/%.c
+	$(CC) $(CFLAGS) -c  $< -o $@
+
+%.o : test/%.c
+	$(CC) $(CFLAGS) -c  $< -o $@
+
+# gay
+#OBJS: $(SRCS)
+#	$(CC) $(CFLAGS) -c -I src -o $@ $(SRCS)
+
 
 -include $(DEPENDS)
 
 clean:
-	$(RM) scp src/*.o
+	$(RM) scp src/*.o 

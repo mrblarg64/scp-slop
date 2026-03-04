@@ -1,6 +1,8 @@
-#ifndef SCP_LOADB_H
+#ifndef LOADB3D_H
+#define LOADB3D_H
 
-#define SCP_LOADB_H
+#include "model.h"
 
-struct scpmodel *loadb3d(char *file, char modeltype);
+int B3DLoader(char* , struct scpmodel*);
+
 #endif

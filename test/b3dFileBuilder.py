@@ -21,14 +21,15 @@ class B3DBuilder:
        # print(cl)
 
         #load bb3d shit into byte array
-        self.data += b'B3DD'
+        self.data += b'BB3D'
         self.data += struct.pack('<i', 1) # size of b3d file
         self.data += struct.pack('<i', int(cl[1]))
 
         # we need to store the location of the size of the b3d file,
         # which is 5 bytes in
         self.bytein += 12
-        self.chunk_sizes.append(0)
+        self.chunk_sizes.append(4)
+        self.chunkp.append(4)
 
         for elem in cl[2:]:
             try:
@@ -158,9 +159,6 @@ class B3DBuilder:
                 self.bytein += 4
 
         #print("checking control flow")
-        # fill in total chunk size
-        size = self.chunk_sizes.pop()
-        self.data[4:8] = struct.pack('<i', size)
             
                 
     
