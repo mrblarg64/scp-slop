@@ -9,7 +9,7 @@ int main() {
   char* file2 = "resource/models/096/scp096.b3d";
   char* file3 = "test/header.b3d";
 
-  if(B3DLoader(file3, &testObject) != 0){
+  if(B3DLoader(file1, &testObject) != 0){
     errormsg("an error has occured! \n");
     return -1;
   }

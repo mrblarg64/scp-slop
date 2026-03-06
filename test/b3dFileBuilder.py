@@ -10,6 +10,17 @@ class B3DBuilder:
         self.bytein = 0
 
 
+    def parseNodeHeader(self, nodeType):
+        self.data += nodeType # nodeType should be a binary
+        self.chunk_sizes[-1] += 8
+        self.bytein += 4
+        self.chunkp.append(self.bytein)
+        self.chunk_sizes.append(0)
+        # store dummy size
+        self.data += struct.pack('<i', 1)
+        self.bytein += 4
+                            
+
         
                   
     def parseFile(self, filename):
@@ -28,6 +39,7 @@ class B3DBuilder:
         # we need to store the location of the size of the b3d file,
         # which is 5 bytes in
         self.bytein += 12
+        self.chunk_sizes.append(0) # garbage 
         self.chunk_sizes.append(4)
         self.chunkp.append(4)
 
@@ -41,109 +53,50 @@ class B3DBuilder:
                     # Must be a String!
                     match elem:
                         case '[TEXS]':
-                            self.data += b'TEXS'
-                            self.bytein += 4
-                            self.chunkp.append(self.bytein)
-                            self.chunk_sizes.append(0)
-                            # store dummy size
-                            self.data += struct.pack('<i', -1)
-                            self.bytein += 4
-                            
+                            self.parseNodeHeader(b'TEXS')
 
                         case '[BRUS]':
-                            self.data += b'BRUS'
-                            self.bytein += 4
-                            self.chunkp.append(self.bytein)
-                            self.chunk_sizes.append(0)
-                            # store dummy size
-                            self.data += struct.pack('<i', 1)
-                            self.bytein += 4
-                            
+                            self.parseNodeHeader(b'BRUS')
 
                         case '[VRTS]':
-                            self.data += b'VRTS'
-                            self.bytein += 4
-                            self.chunkp.append(self.bytein)
-                            self.chunk_sizes.append(0)
-                            # store dummy size
-                            self.data += struct.pack('<i', 1)
-                            self.bytein += 4
-                            
+                            self.parseNodeHeader(b'VRTS')
 
                         case '[TRIS]':
-                            self.data += b'TRIS'
-                            self.bytein += 4
-                            self.chunkp.append(self.bytein)
-                            self.chunk_sizes.append(0)
-                            # store dummy size
-                            self.data += struct.pack('<i', 1)
-                            self.bytein += 4
-                            
+                            self.parseNodeHeader(b'TRIS')
 
                         case '[BONE]':
-                            self.data += b'BONE'
-                            self.bytein += 4
-                            self.chunkp.append(self.bytein)
-                            self.chunk_sizes.append(0)
-                            # store dummy size
-                            self.data += struct.pack('<i', 1)
-                            self.bytein += 4
-                            
+                            self.parseNodeHeader(b'BONE')
 
                         case '[KEYS]':
-                            self.data += b'KEYS'
-                            self.bytein += 4
-                            self.chunkp.append(self.bytein)
-                            self.chunk_sizes.append(0)
-                            # store dummy size
-                            self.data += struct.pack('<i', 1)
-                            self.bytein += 4
-                            
+                            self.parseNodeHeader(b'KEYS')
 
                         case '[ANIM]':
-                            self.data += b'ANIM'
-                            self.bytein += 4
-                            self.chunkp.append(self.bytein)
-                            self.chunk_sizes.append(0)
-                            # store dummy size
-                            self.data += struct.pack('<i', 1)
-                            self.bytein += 4
-
+                            self.parseNodeHeader(b'ANIM')
+                            
                         case '[NODE]':
-                            self.data += b'NODE'
-                            self.bytein += 4
-                            self.chunkp.append(self.bytein)
-                            self.chunk_sizes.append(0)
-                            # store dummy size
-                            self.data += struct.pack('<i', 1)
-                            self.bytein += 4
-
+                            self.parseNodeHeader(b'NODE')
 
                         case '[MESH]':
-                            self.data += b'MESH'
-                            self.bytein += 4
-                            self.chunkp.append(self.bytein)
-                            self.chunk_sizes.append(0)
-                            # store dummy size
-                            self.data += struct.pack('<i', 1)
-                            self.bytein += 4
-                        
+                            self.parseNodeHeader(b'MESH')
 
                         case 'END':
                             # have a size of chunk, could be sub or not
                             size = self.chunk_sizes.pop()
+                            print(size)
                             # add the size to the parent chunks
-                            self.chunk_sizes = [x + size for x in self.chunk_sizes]
+                            # self.chunk_sizes = [x + size for x in self.chunk_sizes]
+                            self.chunk_sizes[-1] += size 
+                            
                             location = self.chunkp.pop()
                             self.data[location:location + 4] = struct.pack('<i',size)
                             
 
                         case string_name:
-                            #print(string_name)
+                            # print(string_name)
                             # name for some chunk
                             string_length = len(string_name) + 1
                             self.chunk_sizes[-1] += string_length
-                            self.data += string_name.encode("ascii")
+                            self.data += (string_name + "\0").encode("ascii")
                             self.bytein += string_length
                         
                 else:
@@ -221,6 +174,6 @@ for b3d_text_file in file_list:
         builder.BuildB3DFile(b3dfile)
 
     else:
-        print("files already exist")
+        print(f"file {b3dfile} already exists")
     
     
