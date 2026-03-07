@@ -53,6 +53,9 @@ class B3DBuilder:
                     # Must be a String!
                     match elem:
                         case '[TEXS]':
+                            # interesting this has no null character
+                            # based on the b3d spec the header
+                            # strings don't have null characters
                             self.parseNodeHeader(b'TEXS')
 
                         case '[BRUS]':
@@ -82,9 +85,9 @@ class B3DBuilder:
                         case 'END':
                             # have a size of chunk, could be sub or not
                             size = self.chunk_sizes.pop()
-                            print(size)
+                            # print(size)
                             # add the size to the parent chunks
-                            # self.chunk_sizes = [x + size for x in self.chunk_sizes]
+                            
                             self.chunk_sizes[-1] += size 
                             
                             location = self.chunkp.pop()

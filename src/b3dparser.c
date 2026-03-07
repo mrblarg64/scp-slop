@@ -8,34 +8,36 @@
 typedef struct {
   unsigned int sizevArray;
   unsigned int sizeIndices;
-  uint32_t flags; // same as b3d
-  uint32_t tex_coord_sets;
-  uint32_t tex_coord_set_size;
+  unsigned flags; // same as b3d
+  unsigned tex_coord_sets;
+  unsigned tex_coord_set_size;
   float* vArray;
-  int32_t* indices;
+  int* indices;
 } VRTS;
 
 
-void TEXSparser(char* mem, unsigned size){
+void TEXSparser(char* mem, size_t size){
   unsigned rtp;
   
   return;
 }
 
-void BRUSHparser(char* mem, unsigned size){
+void BRUSHparser(char* mem, size_t size){
   
   
   return;
 }
+
 // function user must free VatNode upon completion, unless there was an
 // error then the function would handle it
-int NODEparser(char* mem, unsigned int size, VRTS* VatNode, int nodecalls){
-  uint32_t val, vflags, tex_coord_sets, tex_coord_set_size;
-  uint32_t vertexChunksize, meshChunksize, nodeChunksize, animChunksize, boneChunksize; 
-  uint32_t memp, TRISp;
-  float* vertices;
-  uint32_t numVertex;
-  int32_t* indexArray;
+int NODEparser(char* mem, size_t size, VRTS* VatNode, int nodecalls){
+  unsigned vflags, tex_coord_sets, tex_coord_set_size;
+  size_t vertexChunksize, meshChunksize, nodeChunksize, animChunksize, boneChunksize, trisChunksize; 
+  size_t memp, TRISp;
+  float* vertices; // a pickle for the knowing ones
+  unsigned int numVertex;
+  int* indexArray;
+  uint32_t raw, val; 
   
   
   // skip over info until we hit type of node
@@ -47,38 +49,51 @@ int NODEparser(char* mem, unsigned int size, VRTS* VatNode, int nodecalls){
   val = 0x4d455348;
 #endif
 
-  // printf("%u", *((uint32_t*)&mem[memp]));
-  
-  if(val == *((uint32_t*)&mem[memp])){ // MESH Node
+  printf("%lu\n", memp);
+
+  printf("%.4s\n", mem + memp);
+
+  // val == *((uint32_t*)&mem[memp]) causing seg fault da funk
+  if(val == *((uint32_t*)(mem + memp))){ // MESH Node
     memp += 4;
-    meshChunksize = *((uint32_t*)&mem[memp]);
+    memcpy(&raw, mem + memp, 4);
 #if __BYTE_ORDER__ ==  __ORDER_BIG_ENDIAN__
-    meshChunksize = __builtin_bswap32(meshChunksize);
+    raw = __builtin_bswap32(raw);
 #endif
+    meshChunksize = (size_t) raw;
+    printf("meshChunk size: %lu\n", meshChunksize);
     // skip brush id
     memp += 8; // now at a vertix chunk, we can skip the name
-    vertexChunksize = *((uint32_t *) &mem[memp]);
+    memcpy(&raw, mem + memp, 4);
 #if __BYTE_ORDER__ ==  __ORDER_BIG_ENDIAN__
-    vertexChunksize = __builtin_bswap32(vertexChunksize);
+    raw = __builtin_bswap32(raw);
 #endif
+    vertexChunksize = (size_t) raw;
     memp += 4;
-    vflags = *((uint32_t *) &mem[memp]);
+    memcpy(&raw, mem + memp, 4);
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-    vflags = __builtin_bswap32(vflags);
+    raw = __builtin_bswap32(raw);
 #endif
+    vflags = (unsigned) raw;
     memp += 4;
-    tex_coord_sets = *((uint32_t *) &mem[memp]);
+    memcpy(&raw, mem + memp, 4);
+    
 #if __BYTE_ORDER__ ==  __ORDER_BIG_ENDIAN__
-    tex_coord_sets = __builtin_bswap32(tex_coord_sets);
+    raw = __builtin_bswap32(raw);
 #endif
+    
+    tex_coord_sets = (unsigned) raw;
     if(tex_coord_sets > 1){
       printf("WTF it's not a simple U/V, we are fucked\n");
     }
     memp += 4;
-    tex_coord_set_size = *((uint32_t *)&mem[memp]);
+    memcpy(&raw, mem + memp, 4);
+    
 #if __BYTE_ORDER__ ==  __ORDER_BIG_ENDIAN__
-    tex_coord_set_size = __builtin_bswap32(tex_coord_set_size);
+    raw = __builtin_bswap32(raw);
 #endif
+    
+    tex_coord_set_size = (unsigned) raw; 
     memp += 4;
 
     if(tex_coord_set_size > 2){
@@ -90,6 +105,8 @@ int NODEparser(char* mem, unsigned int size, VRTS* VatNode, int nodecalls){
     numVertex = (vertexChunksize - 12)/sizeof(float) / \
       (3 + 3 * (vflags & 1) + 4 *(vflags & 2) + tex_coord_sets * tex_coord_set_size);
     
+    printf("The number of vertices %u\n", numVertex);
+
     
     vertices = SCPMALLOC(vertexChunksize - 12);
     if(!vertices){
@@ -98,9 +115,9 @@ int NODEparser(char* mem, unsigned int size, VRTS* VatNode, int nodecalls){
       return -1; 
     }
 
-    memcpy(vertices, &mem[memp], vertexChunksize - 12);
+    memcpy(vertices, mem + memp, vertexChunksize - 12);
 #if __ORDER_BYTE__ ==  __ORDER_BIG_ENDIAN__
-    // vertices is float, is this the right swap?
+    // vertices is float, may need fixing
     for(size_t i = 0; i < numVertex; i++){
       vertices[i] = (float) __builtin_bswap32(*((int32_t*) &vertices[i]));
     }
@@ -125,36 +142,49 @@ int NODEparser(char* mem, unsigned int size, VRTS* VatNode, int nodecalls){
     }
     
     // parse the potential multiple triangles, ignoring brush id
-    for(int i = 0; memp < meshChunksize; i += 3){
+    // really memp should never be over meshChunksize
+    for(size_t i = 0; memp < meshChunksize; ++i){
       memp += 4; // skip over name
-      uint32_t trisChunksize = *((uint32_t *) &mem[memp]);
+      memcpy(&raw, mem + memp, 4);
+      
 #if __BYTE_ORDER__ ==  __ORDER_BIG_ENDIAN__
-      trisChunksize = __builtin_bswap32(trisChunksize);
+      raw = __builtin_bswap32(raw);
 #endif
+      trisChunksize = (size_t) raw;
       memp += 8; // skip over brush id
-      memcpy(&indexArray[i], &mem[memp], trisChunksize - 4 /* remove brush id*/);
-      VatNode->sizeIndices += (trisChunksize - 4) / 4; // 4 is the size of ints
+      // memcpy(&indexArray[i], mem + memp, trisChunksize - 4 /* remove brush id*/);
+      for(size_t j = 0; j < (trisChunksize - 4) / 12; ++j){
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+	indexArray[j + i] = (int) *(int32_t*)(mem + memp);
+#else
+	indexArray[j + i] = (int) __builtin_bswap32(*(int32_t*)(mem + memp));
+#endif
+	memp += 4; 
+      }
+      
+      i += (trisChunksize - 4) / 12;
+      VatNode->sizeIndices += (trisChunksize - 4) / 12; // 4 is the size of ints
       memp += trisChunksize - 4;
     }
 
-#if __BYTE_ORDER__ ==  __ORDER_BIG_ENDIAN__
-    for(int i = 0; i < VatNode->sizeIndices; i++){
-      indexArray[i] = __builtin_bswap32(indexArray[i]);
-    }
-    
-#endif
     VatNode->indices = indexArray;
     
     // There is now a possibility for key, animes, or node chunks
     for(int i = 0; memp < size;){
-      switch(*((uint32_t *)&mem[memp])){
+      switch(*((uint32_t *)(mem + memp))){
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
       case 0x4b455953: // KEYS
 #else
       case 0x5359454b:
 #endif
+	printf("Here at keys\n");
 	/* we will skip this for now as it's for animations */
-	memp = 4 + memp + *((uint32_t *)(&mem[memp + 4]));
+	memcpy(&raw, mem + memp + 4, 4);
+	
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+	raw = __builtin_bswap32(raw);
+#endif
+	memp = 4 + memp + (size_t) raw;
 	break;
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
       case 0x4e4f4445: // NODE
@@ -163,13 +193,15 @@ int NODEparser(char* mem, unsigned int size, VRTS* VatNode, int nodecalls){
 #endif
 	/* Recursive case */
 	memp += 4;
-	nodeChunksize = *((uint32_t*)&mem[memp]);
+	memcpy(&raw, mem + memp, 4);
+	
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-	nodeChunksize = __builtin_bswap32(nodeChunksize);
+	raw = __builtin_bswap32(raw);
 #endif
+	nodeChunksize = (size_t) raw;
 	memp += 4;
 	nodecalls += 1;
-	nodecalls = NODEparser(&mem[memp], nodeChunksize, VatNode + 1 + i * nodecalls, nodecalls);
+	nodecalls = NODEparser(mem + memp, nodeChunksize, VatNode + 1 + i * nodecalls, nodecalls);
 	if(nodecalls < 0){
 	  SCPFREE(VatNode->indices);
 	  SCPFREE(VatNode->vArray);
@@ -186,10 +218,12 @@ int NODEparser(char* mem, unsigned int size, VRTS* VatNode, int nodecalls){
 #endif
 	/* Skipping for now as it's related to animation, we are not there yet. */
 	memp += 4;
-	animChunksize = *((uint32_t *) &mem[memp]);
+	memcpy(&raw, mem + memp, 4);
+	
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN
-	animChunksize = __builtin_bswap32(animChunksize);
+	raw = __builtin_bswap32(raw);
 #endif
+	animChunksize = (size_t) raw;
 	memp += 4 + animChunksize;
 	break;
 
@@ -207,12 +241,14 @@ int NODEparser(char* mem, unsigned int size, VRTS* VatNode, int nodecalls){
     val = 0x454e4f42;
 #endif
 
-  } else if(val == *((uint32_t *) &mem[memp])){ 
+    } else if(val == *((uint32_t *) (mem + memp))){ 
     memp += 4;
-    boneChunksize = *((uint32_t *) &mem[memp]);
+    memcpy(&raw, mem + memp, 4);
+    
 #if __BYTE_ORDERR__ ==  __ORDER_BIG_ENDIAN__
-    boneChunksize = __builtin_bswap32(boneChunksize);
+    raw = __builtin_bswap32(raw);
 #endif
+    boneChunksize = (size_t)raw; 
     memp += 4 + boneChunksize;   
   }
   else {
@@ -234,16 +270,17 @@ int NODEparser(char* mem, unsigned int size, VRTS* VatNode, int nodecalls){
 int B3DLoader(char* file, struct scpmodel* retval){
   FILE_T fdb3d;
   uint32_t val;
-  unsigned int fsize, fp;
+  size_t fsize, fp;
   char* finram;
-  uint32_t totalChunkSize, SubChunkSize;
+  size_t totalChunkSize, SubChunkSize;
   VRTS* mesh_buff; // contains all meshs from the mesh nodes
   int numNodes;
+  uint32_t raw; 
 
   fdb3d = scpopen(file);
   fsize = scpgetfsize(fdb3d);
 
-  printf("%u\n", fsize);
+  // printf("%u\n", fsize);
 
   if(fsize < 8){
     errormsg("file size is too small for type b3d\n");
@@ -269,19 +306,21 @@ int B3DLoader(char* file, struct scpmodel* retval){
   
   if(*((uint32_t*)(finram)) != val){
     // no b3d header
-    errormsg("no b3d header");
+    errormsg("no b3d header\n");
     scpunmapfile(finram, fsize);
     return -2;
   }
 
+  memcpy(&raw, finram + 4, 4);
   
-  totalChunkSize = *((uint32_t *) &finram[4]);
-  #if __BYTE_ORDER__ ==  __ORDER_BIG_ENDIAN__
-  printf("here\n");
-  totalChunkSize = __builtin_bswap32(totalChunkSize);
-  #endif
+#if __BYTE_ORDER__ ==  __ORDER_BIG_ENDIAN__
+  printf("BIG ENDIAN ALERT\n");
+  raw = __builtin_bswap32(raw);
+#endif
 
-  printf("%u\n", totalChunkSize);
+  totalChunkSize = (size_t) raw; 
+
+  //printf("%u\n", totalChunkSize);
 
   if(totalChunkSize + 8 != fsize){
     errormsg("file size doesn't match header file size\n");
@@ -306,10 +345,17 @@ int B3DLoader(char* file, struct scpmodel* retval){
       case 0x54455853:  
 #endif
 	// printf("here at TEXS, this is the value of fp %u\n", fp);
-	fp += 4; 
-	SubChunkSize = *((uint32_t *)&finram[fp]);
+	fp += 4;
 
-	printf("%u\n", SubChunkSize);
+	memcpy(&raw, finram + fp, 4);
+
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+	raw = __builtin_bswap32(raw);
+#endif
+	
+	SubChunkSize = (size_t) raw;
+
+	printf("%lu\n", SubChunkSize);
 	
 	fp += 4;
 	//TEXSparser(&finram[fp], SubChunkSize);
@@ -322,8 +368,14 @@ int B3DLoader(char* file, struct scpmodel* retval){
       case 0x42525553:
 #endif
 
-      fp += 4; 
-      SubChunkSize = *((uint32_t *)&finram[fp]); 
+      fp += 4;
+      memcpy(&raw, finram + fp, 4);
+
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+      raw = __builtin_bswap32(raw);
+#endif
+      
+      SubChunkSize = (size_t) raw; 
       fp += 4;
       //  BRUSHparser(&finram[fp], SubChunkSize);
       fp += SubChunkSize;
@@ -335,16 +387,19 @@ int B3DLoader(char* file, struct scpmodel* retval){
       case 0x4e4f4445:
 #endif
       fp += 4;
-      printf("here the value of fp is %u\n", fp);
-      SubChunkSize = *((uint32_t *)&finram[fp]);
+      // printf("here the value of fp is %u\n", fp);
+      memcpy(&raw, finram + fp, 4);
+      
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-      SubChunkSize = __builtin_bswap32(SubChunkSize);
+     raw = __builtin_bswap32(raw);
 #endif
 
-      printf("%u", SubChunkSize);
+     SubChunkSize = (size_t) raw;
+
+      printf("%lu\n", SubChunkSize);
       
       fp += 4;
-      /* This is a waste of memory but it's not the worse*/
+      /* This is a waste of memory but it's not the worst */
       mesh_buff = (VRTS*) SCPMALLOC(SubChunkSize); 
       if(!mesh_buff){
 	printf("failed to allocate mem for mesh\n");
