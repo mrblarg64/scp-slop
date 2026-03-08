@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "loadb3d.h"
+#include "b3dloader.h"
 #include "model.h"
 #include "errormsg.h"
 

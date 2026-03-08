@@ -14,7 +14,7 @@ DEPENDS = $(SRCS:.c=.d)
 scp : $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) -o scp
 
-test : b3dparser.o test1.o scp-os.o errormsg.o
+test : b3dloader.o test1.o scp-os.o errormsg.o
 	$(CC) $^ -o test_triangle 
 
 %.o : src/%.c
