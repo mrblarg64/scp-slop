@@ -26,7 +26,7 @@ const struct sigaction siga = {.sa_handler = SIG_IGN};
 
 #ifdef _WIN32
 
-void osint()
+void osinit()
 {
 	DWORD myerrno;
 
