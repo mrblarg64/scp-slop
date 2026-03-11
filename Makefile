@@ -9,26 +9,30 @@ CC=gcc
 
 SRCS = $(wildcard src/*.c)
 OBJS = $(SRCS:.c=.o)
-DEPENDS = $(SRCS:.c=.d)
+DEPENDS = $(wildcard objs/*.d)
+
+-include $(DEPENDS) 
 
 scp : $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) -o scp
 
-test : b3dloader.o test1.o scp-os.o errormsg.o
-	$(CC) $^ -o test_triangle 
+testparser : objs/b3dloader.o objs/test1.o objs/scp-os.o objs/errormsg.o 
+	$(CC) $^ -o testparser
 
-%.o : src/%.c
-	$(CC) $(CFLAGS) -c  $< -o $@
+objs/test1.o: test/test1.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-%.o : test/%.c
-	$(CC) $(CFLAGS) -c  $< -o $@
+objs/%.o : src/%.c
+	$(CC) $(CFLAGS) -c $< -o $@	
+
+#objs/%.o : test/%.c
+#	$(CC) $(CFLAGS) -c  $< -o $@
 
 # gay
 #OBJS: $(SRCS)
 #	$(CC) $(CFLAGS) -c -I src -o $@ $(SRCS)
 
 
--include $(DEPENDS)
 
 clean:
 	$(RM) scp src/*.o 

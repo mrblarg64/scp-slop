@@ -1,0 +1,46 @@
+[BB3D]
+ 1
+ [TEXS]
+   texture1.png
+   1 2
+   0.0f 0.0f
+   1.0f 1.0f
+   0.0f
+ END
+ [NODE]
+   head_node
+   0.0f 0.0f 0.0f
+   1.0f 1.0f 1.0f
+   0.0f 0.0f 0.0f 0.0f
+   [MESH]
+     -1
+     [VRTS]
+        0
+	0
+	0
+	-0.5f -0.5f 0.0f
+	0.5f -0.5f 0.0f
+	0.0f 0.5f 0.0f
+      END
+      [TRIS]
+        -1
+	 0 1 2
+      END
+      [TRIS]
+        2
+	3 4 5
+	6 7 8
+	9 10 11
+      END
+    END
+    [ANIM]
+      0
+      0
+      60f
+     END
+     [KEYS]
+      0
+      0
+     END
+  END 
+END
