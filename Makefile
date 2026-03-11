@@ -8,31 +8,29 @@ override LDFLAGS += -lm -lGL -lglfw -march=native -O3 -flto -fuse-linker-plugin
 CC=gcc
 
 SRCS = $(wildcard src/*.c)
-OBJS = $(SRCS:.c=.o)
-DEPENDS = $(wildcard objs/*.d)
+OBJS = $(patsubst src/%.c, objs/%.o, $(SRCS))
+DEPENDS = $(OBJS:.o=.d)
 
 -include $(DEPENDS) 
 
 scp : $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) -o scp
 
-testparser : objs/b3dloader.o objs/test1.o objs/scp-os.o objs/errormsg.o 
-	$(CC) $^ -o testparser
+#testparser : objs/b3dloader.o objs/test1.o objs/scp-os.o objs/errormsg.o 
+#	$(CC) $^ -o testparser
 
-objs/test1.o: test/test1.c
-	$(CC) $(CFLAGS) -c $< -o $@
+#objs/test1.o: test/test1.c
+#	$(CC) $(CFLAGS) -c $< -o $@
 
 objs/%.o : src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@	
 
-#objs/%.o : test/%.c
-#	$(CC) $(CFLAGS) -c  $< -o $@
 
 # gay
-#OBJS: $(SRCS)
-#	$(CC) $(CFLAGS) -c -I src -o $@ $(SRCS)
+#$(OBJS): $(SRCS)
+#	$(CC) $(CFLAGS) -c -o $@ $(SRCS)
 
 
 
 clean:
-	$(RM) scp src/*.o 
+	$(RM) scp obj/*.o obj/*.d 

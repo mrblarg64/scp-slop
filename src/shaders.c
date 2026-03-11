@@ -86,4 +86,6 @@ int compileshaders()
 
 		x++;
 	}
+
+	return 0;
 }
