@@ -12,7 +12,7 @@ struct scpPlayer
 	float position[3];
 	float rotation[2];//yaw[0] pitch[1]
 	char type;
-	struct scpmodel *model;
+	struct scpmodel model;
 };
 
 #endif

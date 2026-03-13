@@ -34,9 +34,12 @@ void render(int width, int height, struct scpCamera *camera, struct scpPlayer *p
 	
 	if (p)
 	{
-		glUseProgram(p->model->sprog->program);
-		glBindVertexArray(p->model->varray);
-		glDrawElements(GL_TRIANGLES, p->model->trigscount, GL_UNSIGNED_INT, 0);
+	  for(unsigned i = 0; i < p->model.num_of_meshes; i++)
+	    {
+	      	glUseProgram(p->model.sprog.program);
+		glBindVertexArray(p->model.vabuff[i]);
+		glDrawElements(GL_TRIANGLES, p->model.trigscount[i], GL_UNSIGNED_INT, 0);
+       	    }
 	}
 	return;
 }

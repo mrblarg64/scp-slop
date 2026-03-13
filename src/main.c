@@ -8,6 +8,7 @@
 #include "camera.h"
 #include "player.h"
 
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -39,8 +40,24 @@ void framebufferSizeCallback(GLFWwindow* w, int width, int height)
 }
 
 
-int loadUp(GLFWwindow* w)
-{
+int loadUp(GLFWwindow* w, struct scpCamera* cam, struct scpPlayer* player)
+{  
+	(cam->pos)[0]=0;
+	(cam->pos)[1]=0;
+	(cam->pos)[2]=0;
+	cam->fov=65.0f;
+	cam->zNear=0.01f;
+	cam->zFar=100.0f;
+
+	
+	if(B3DLoader("resource/models/096/scp096.b3d", &(player->model)))
+	{
+	  // will have to clean up player allocations
+	  errormsg("B3D loader error\n");
+	  return -1;
+	}
+	
+  
   if(!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
   {
     errormsg("Failed to initialize GLAD\n");
@@ -55,6 +72,12 @@ int loadUp(GLFWwindow* w)
   glfwSetKeyCallback(w, keyCallbackFunction);
     //vsync...
   glfwSwapInterval(1);
+
+  if(compileshaders())
+  {
+    // failed to compile
+    return -1;
+  }
 
   return 0;
 }
@@ -90,54 +113,35 @@ GLFWwindow* openWindow()
 	return retval;
 }
 
-void mainloop(GLFWwindow *window)
-{
-	int width;
-	int height;
-	double time;//lol
-	float fps;
-	struct scpPlayer player;
-	//delete variables below this comment
-	//they are temporary
-	struct scpCamera cam;
-	(cam.pos)[0]=0;
-	(cam.pos)[1]=0;
-	(cam.pos)[2]=0;
-	cam.fov=65.0f;
-	cam.zNear=0.01f;
-	cam.zFar=100.0f;
-
-	__builtin_memset(&player, 0, sizeof(player));
-	// B3DLoader("resource/models/096/scp096.b3d", &player);
-	
-	while (!glfwWindowShouldClose(window))
-	{
-		time=glfwGetTime();
-		
-
-		render(width,height,&cam,&player);
-
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-	}
-}
-
-void cleanUp()
+void cleanUp(struct scpPlayer* p)
 {
 	printf("k bye\n");
 	glfwTerminate();
+	SCPFREE(p->model.trigscount);
+	SCPFREE(p->model.vabuff);
 	printf("it worked bitch\n");
 }
 
 int main(int argc, char *argv[])
 {
+  	int width;
+	int height;
+	double time;
+	float fps;
+	struct scpPlayer player;
+	//delete variables below this comment
+	//they are temporary
+	struct scpCamera cam;
+
 	GLFWwindow *window;
+
+	__builtin_memset(&player, 0, sizeof(player));
 	
 	window = openWindow();
 	if(window == NULL)
 	  return -1;
 	
-	if(loadUp(window))
+	if(loadUp(window, &cam, &player))
 	{
 	  // error
 	  glfwTerminate();
@@ -145,8 +149,21 @@ int main(int argc, char *argv[])
 	}
 
 	osinit();
-	
-	mainloop(window);
-	cleanUp();
+
+	/* main loop  */
+	while (!glfwWindowShouldClose(window))
+	{
+		time=glfwGetTime();
+		
+
+	        render(width,height,&cam,&player);
+
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+
+	/* --------- */
+		
+	cleanUp(&player);
 	return 0;
 }

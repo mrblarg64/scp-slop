@@ -1,29 +1,31 @@
 #include "shaders.h"
-#include <stdlib.h>
 #include "errormsg.h"
 
-const char *fshaders[] = {"#version 330\
-				       \
-out vec3 color;			       \
-				       \
-\void main(void)		       \
-{				       \
-	color=vec3(0.0,0.0,1.0);       \
+const char *fshaders[] = {"#version 330 core\
+in vec4 inColor;			    \
+out vec3 color;				    \
+					    \
+\void main(void)			    \
+{					    \
+	color = inColor;		    \
 }",
 	NULL};
 
-const char *vshaders[] = {"#version 3300 core		\
-							\
-in vec3 vertex;						\
-uniform mat4 uberMatrix;				\
-							\
+const char *vshaders[] = {"#version 330 core		\
+layout (location = 0) in vec3 pos;			\
+layout (location = 1) in vec3 normal;			\
+layout (location = 2) in vec4 color;		        \
+layout (location = 3) in vec2 tex;			\
+uniform mat4 uberMatrix;                                \
+  						        \
+out ourColor;					        \
+						        \
 void main(void)						\
 {							\
-	gl_Position=uberMatrix*vec4(vertex,1.0);	\
-}							\
-							\
-",
-	NULL};
+  gl_Position = 0.5f * vec4(pos, 2.0);			\
+  ourColor = color;					\
+}",
+  NULL};
 
 struct scpshader scpvshads;
 struct scpshader scpfshads;
@@ -43,7 +45,7 @@ int compileshaders()
 		if (!vshader)
 		{
 			errormsg("unable to create shader");
-			exit(1);
+			return -1;
 		}
 		slen = __builtin_strlen(vshaders[x]);
 		glShaderSource(vshader, 1, &vshaders[x], &slen);
@@ -55,7 +57,7 @@ int compileshaders()
 			GLchar err[1024];
 			glGetShaderInfoLog(vshader, 1024, NULL, err);
 			errormsg(err);
-			exit(1);
+			return -1;
 		}
 
 
@@ -63,7 +65,7 @@ int compileshaders()
 		if (!fshader)
 		{
 			errormsg("unable to create shader");
-			exit(1);
+			return -1;
 		}
 		slen = __builtin_strlen(fshaders[x]);
 		glShaderSource(fshader, 1, &fshaders[x], &slen);
@@ -75,7 +77,7 @@ int compileshaders()
 			GLchar err[1024];
 			glGetShaderInfoLog(fshader, 1024, NULL, err);
 			errormsg(err);
-			exit(1);
+			return -1;
 		}
 
 		scpshad.program = glCreateProgram();

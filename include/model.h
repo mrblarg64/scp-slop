@@ -12,12 +12,13 @@ struct scpmodel
 	float position[3];
 	float rotation[4][4];
 	char type;
-	unsigned vertcount;
-	unsigned trigscount;
-	GLuint vbuff;
-	GLuint varray;
-	GLuint ibuff;
-	struct scpshader *sprog;
+  	unsigned num_of_meshes;
+  //	unsigned vertcount;
+  	unsigned* trigscount; // dependant on the number of meshes in the model
+  //unsigned* vbuff;
+	GLuint* vabuff;
+  //	unsigned* ibuff;
+	struct scpshader sprog;
 };
 
 #endif

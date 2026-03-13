@@ -1,5 +1,4 @@
 #ifndef SCP_SHADER_H
-
 #define SCP_SHADER_H
 
 #include <glad/glad.h>

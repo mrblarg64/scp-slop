@@ -10,15 +10,42 @@
 #include "errormsg.h"
 
 typedef struct {
-	uint32_t sizevArray;
+	uint32_t size_of_vertex;
         unsigned num_of_floats;
-	uint32_t sizeIndices;
+	uint32_t size_of_indices;
 	uint32_t flags; // same as b3d
 	uint32_t tex_coord_sets;
 	uint32_t tex_coord_set_size;
 	float* vArray;
 	uint32_t* indices;
 } VRTS;
+
+static void ClearAllocation(int number_of_meshes, VRTS* meshp) {
+	for(int i = 0; i < number_of_meshes; i++){
+	        unsigned int  size_of_array = (meshp[i]).num_of_floats;
+		for(unsigned int j = 0; j < size_of_array; j += 3){
+		  printf("%f %f %f\n",				\
+			       (meshp[i]).vArray[j],	\
+			       (meshp[i]).vArray[j+1],	\
+			       (meshp[i]).vArray[j+2]);
+		}
+		SCPFREE((meshp[i]).vArray);
+		unsigned int size_of_indices = (meshp[i]).size_of_indices;
+		for(unsigned int j = 0; j < size_of_indices; j += 3){
+		  printf("%" PRIu32 " %" PRIu32 " %" PRIu32 "\n", \
+			 (meshp[i]).indices[j],		   \
+			 (meshp[i]).indices[j+1],		   \
+			 (meshp[i]).indices[j+2]);
+		}
+		SCPFREE((meshp[i]).indices);
+	}
+	
+
+	if(number_of_meshes > 0) SCPFREE(meshp);
+
+	return;
+  
+}
 
 
 void TEXSparser(char* mem, size_t size){
@@ -49,7 +76,7 @@ __attribute__((always_inline)) static inline uint32_t readu32(char *addr)
 
 // function user must free VatNode upon completion, unless there was an
 // error then the function would handle it
-int NODEparser(char* mem, uint32_t size, VRTS* VatNode){
+static int NODEparser(char* mem, uint32_t size, VRTS* VatNode){
 	uint32_t vflags, tex_coord_sets, tex_coord_set_size;
 	uint32_t vertexChunksize, meshChunksize, nodeChunksize, animChunksize, boneChunksize, trisChunksize; 
 	unsigned memp, TRISp;
@@ -87,15 +114,18 @@ int NODEparser(char* mem, uint32_t size, VRTS* VatNode){
    
 		tex_coord_sets = readu32(&mem[memp]);
 		if(tex_coord_sets > 1){
-			printf("WTF it's not a simple U/V, we are fucked\n");
+			errormsg("WTF it's not a simple U/V, we are fucked\n");
+			return -1;
 		}
+		
 		memp += 4;
 
 		tex_coord_set_size = readu32(&mem[memp]); 
 		memp += 4;
 
 		if(tex_coord_set_size > 2){
-			printf("texture vertex greater than 2\n");
+			errormsg("texture vertex greater than 2\n");
+			return -1;
 		}
 
 		num_floats = (vertexChunksize - 12) / sizeof(float);
@@ -127,7 +157,7 @@ int NODEparser(char* mem, uint32_t size, VRTS* VatNode){
 		}
 		#endif
 
-		VatNode->sizevArray = numVertex;
+		VatNode->size_of_vertex = numVertex;
 		VatNode->flags = vflags;
 		VatNode->tex_coord_sets = tex_coord_sets;
 		VatNode->tex_coord_set_size = tex_coord_set_size;
@@ -140,7 +170,7 @@ int NODEparser(char* mem, uint32_t size, VRTS* VatNode){
 		//printf("%.4s\n", mem + memp);
 
 		// allocate space for index vertices
-		VatNode->sizeIndices = 0;
+		VatNode->size_of_indices = 0;
 	       
 		//printf("allocsize %u\n", meshChunksize - (memp - meshstart));
 		/* to save memory we can parse for the sizes excusivesly */
@@ -174,7 +204,7 @@ int NODEparser(char* mem, uint32_t size, VRTS* VatNode){
 			}
 
 		        i += temp_num_of_indices; 
-			VatNode->sizeIndices += temp_num_of_indices; 
+			VatNode->size_of_indices += temp_num_of_indices; 
 			// memp += trisChunksize - 4;
 		}
 
@@ -264,7 +294,7 @@ int NODEparser(char* mem, uint32_t size, VRTS* VatNode){
  * retval is a struct that needs to be filled out
  * returns status as int, negative if error, 0 for good
  */
-int B3DLoader(char* file, struct scpmodel* retval){
+int B3DLoader(char* file, struct scpmodel* p){
 	FILE_T fdb3d;
 	uint32_t val;
 	uint64_t fsize;
@@ -295,7 +325,6 @@ int B3DLoader(char* file, struct scpmodel* retval){
 
 	header_name = readu32(finram);
 	
-
 	//parse B3D Node
 	if( header_name != B3D_CHUNK){
 		// no b3d header
@@ -374,30 +403,77 @@ int B3DLoader(char* file, struct scpmodel* retval){
 	}
 
 	// everything is parsed now need to load info into gpu
-	// then load into scp model
+	// and into scp model
+	p->num_of_meshes = num_mesh;
+	p->vabuff = SCPMALLOC(sizeof(GLuint) * num_mesh);
+	p->trigscount = SCPMALLOC(sizeof(unsigned) * num_mesh);
 
-	/* Just testing below can remove once complete */
-	for(int i = 0; i < num_mesh; i++){
-	        unsigned int  size_of_array = (mesh_buff[i]).num_of_floats;
-		for(unsigned int j = 0; j < size_of_array; j += 3){
-		  printf("%f %f %f\n",				\
-			       (mesh_buff[i]).vArray[j],	\
-			       (mesh_buff[i]).vArray[j+1],	\
-			       (mesh_buff[i]).vArray[j+2]);
-		}
-		SCPFREE((mesh_buff[i]).vArray);
-		unsigned int size_of_indices = (mesh_buff[i]).sizeIndices;
-		for(unsigned int j = 0; j < size_of_indices; j += 3){
-		  printf("%" PRIu32 " %" PRIu32 " %" PRIu32 "\n", \
-			 (mesh_buff[i]).indices[j],		   \
-			 (mesh_buff[i]).indices[j+1],		   \
-			 (mesh_buff[i]).indices[j+2]);
-		}
-		SCPFREE((mesh_buff[i]).indices);
+	if(p->vabuff || p->trigscount){
+	  errormsg("malloc failed to allocate for vabuff\n");
+	  ClearAllocation(num_mesh, mesh_buff);
+	  return -1;
 	}
 
-	/* testing code segment is done */
-	if(num_mesh > 0) SCPFREE(mesh_buff);
-  
+	// one mesh <-> one VAO
+	glGenVertexArrays(num_mesh, p->vabuff);
+	
+	for(int i = 0; i < num_mesh; i++)
+	{
+	  	GLuint VBO, EBO;
+		glBindVertexArray(p->vabuff[i]);
+		glGenBuffers(1, &VBO);
+		glGenBuffers(1, &EBO);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, mesh_buff[i].num_of_floats * sizeof(float),\
+			     mesh_buff[i].vArray, GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, EBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh_buff[i].size_of_indices * sizeof(uint32_t), \
+			      mesh_buff[i].indices, GL_STATIC_DRAW);
+
+		p->trigscount[i] = mesh_buff[i].size_of_indices;
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, mesh_buff[i].size_of_vertex * sizeof(float) \
+				      , (void*) 0);
+		glEnableVertexAttribArray(0);
+
+		if(mesh_buff[i].flags & B3D_FLAG_NORMAL_PRESENT)
+		{
+		  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE,\
+					mesh_buff[i].size_of_vertex * sizeof(float), \
+					(void*) (3 * sizeof(float)));
+		  glEnableVertexAttribArray(1);
+		}
+
+		if(mesh_buff[i].flags & B3D_FLAG_COLOUR_PRESENT)
+		{
+		  glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, \
+					mesh_buff[i].size_of_vertex * sizeof(float), \
+					(void*) ((3 + 3*(mesh_buff[i].flags & B3D_FLAG_NORMAL_PRESENT)) * sizeof(float)));
+		  glEnableVertexAttribArray(2);
+		}
+
+		if((mesh_buff[i].tex_coord_sets > 0) & (mesh_buff[i].tex_coord_set_size > 0))
+	        {
+		  glVertexAttribPointer(3, \
+					mesh_buff[i].tex_coord_sets * mesh_buff[i].tex_coord_set_size, \
+					GL_FLOAT,\
+					GL_FALSE,\
+					mesh_buff[i].size_of_vertex * sizeof(float), \
+					(void*) ((3 + 3*(mesh_buff[i].flags & B3D_FLAG_NORMAL_PRESENT) \
+						  + 4*(mesh_buff[i].flags & B3D_FLAG_COLOUR_PRESENT)) \
+						 * sizeof(float))
+					);
+		  glEnableVertexAttribArray(3);
+		}		
+	}
+
+	
+		
+	p->sprog.program = shaderprogs[0];
+	p->sprog.unicount = 0; // the fuck is this for?
+	p->sprog.uniforms = NULL; // ??
+	
+
+	ClearAllocation(num_mesh, mesh_buff);
 	return 0;
 }
