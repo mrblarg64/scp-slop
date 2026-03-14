@@ -1,34 +1,12 @@
 #include "shaders.h"
 #include "errormsg.h"
 
-const char *fshaders[] = {"#version 330 core\
-in vec4 inColor;			    \
-out vec3 color;				    \
-					    \
-\void main(void)			    \
-{					    \
-	color = inColor;		    \
-}",
-	NULL};
 
-const char *vshaders[] = {"#version 330 core		\
-layout (location = 0) in vec3 pos;			\
-layout (location = 1) in vec3 normal;			\
-layout (location = 2) in vec4 color;		        \
-layout (location = 3) in vec2 tex;			\
-uniform mat4 uberMatrix;                                \
-  						        \
-out ourColor;					        \
-						        \
-void main(void)						\
-{							\
-  gl_Position = 0.5f * vec4(pos, 2.0);			\
-  ourColor = color;					\
-}",
-  NULL};
 
 struct scpshader scpvshads;
 struct scpshader scpfshads;
+
+struct scpshader scpshad;
 
 int compileshaders()
 {

@@ -8,7 +8,7 @@ override LDFLAGS += -lm -lGL -lglfw -march=native -O3 -flto -fuse-linker-plugin
 CC=gcc
 
 SRCS = $(wildcard src/*.c)
-OBJS = $(patsubst src/%.c, objs/%.o, $(SRCS))
+OBJS = $(patsubst src/%.c, obj/%.o, $(SRCS))
 DEPENDS = $(OBJS:.o=.d)
 
 -include $(DEPENDS) 

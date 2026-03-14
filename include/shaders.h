@@ -4,10 +4,33 @@
 #include <glad/glad.h>
 #include <stddef.h>
 
-#define SCP_SHADER_COUNT 1
+const char * const fshaders[] = {"#version 330 core\
+in vec4 inColor;			    \
+out vec3 color;				    \
+					    \
+\void main(void)			    \
+{					    \
+	color = inColor;		    \
+}",
+	NULL};
 
-extern const char *fshaders[];
-extern const char *vshaders[];
+const char * const vshaders[] = {"#version 330 core		\
+layout (location = 0) in vec3 pos;			\
+layout (location = 1) in vec3 normal;			\
+layout (location = 2) in vec4 color;		        \
+layout (location = 3) in vec2 tex;			\
+uniform mat4 uberMatrix;                                \
+  						        \
+out ourColor;					        \
+						        \
+void main(void)						\
+{							\
+  gl_Position = 0.5f * vec4(pos, 2.0);			\
+  ourColor = color;					\
+}",
+  NULL};
+
+#define SCP_SHADER_COUNT ((sizeof(vshaders)/sizeof(vshaders[0])) - 1)
 
 extern GLuint shaderprogs[SCP_SHADER_COUNT];
 
