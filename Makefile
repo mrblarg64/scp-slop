@@ -22,7 +22,7 @@ scp : $(OBJS)
 #objs/test1.o: test/test1.c
 #	$(CC) $(CFLAGS) -c $< -o $@
 
-objs/%.o : src/%.c
+obj/%.o : src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@	
 
 
