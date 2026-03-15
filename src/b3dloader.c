@@ -85,17 +85,15 @@ static int NODEparser(char* mem, uint32_t size, VRTS* VatNode){
 	unsigned int numVertex;
 	unsigned num_floats;
 	uint32_t* indexArray;
-	uint32_t header_name;
 	unsigned temp_num_of_indices;
 	int nodecalls = 0, node_result;
 	
   
 	// skip over info until we hit type of node
 	memp = __builtin_strlen(mem) + 1 + 40;
-	header_name = readu32(mem + memp);
 
         
-	if (B3D_MESH_CHUNK == header_name)
+	if (B3D_MESH_CHUNK == (*(uint32_t*) (&mem[memp])))
 	{
 	  	printf("Found a Mesh Node\n");
 		// MESH Node
@@ -212,9 +210,7 @@ static int NODEparser(char* mem, uint32_t size, VRTS* VatNode){
     
 		// There is now a possibility for key, animes, or node chunks
 		while(memp < size){
-		  
-		        header_name = readu32(mem + memp);
-		        switch(header_name){
+		        switch((*(uint32_t*) (&mem[memp]))){
 
 			case B3D_KEYS_CHUNK:
 				printf("Here at keys\n");
@@ -268,7 +264,7 @@ static int NODEparser(char* mem, uint32_t size, VRTS* VatNode){
 		}
 
 	}
-	else if(B3D_BONE_CHUNK == header_name)
+	else if(B3D_BONE_CHUNK == (*(uint32_t*) (&mem[memp])))
 	{
 	  	printf("Found a Bone Chunk, skipping for now\n");
 		// memp += 4;		
@@ -350,13 +346,14 @@ int B3DLoader(char* file, struct scpmodel* p){
 	}
 
 
+
+
 	fp = 12;
 	while (fp < fsize){
-	        header_name = readu32(finram + fp);
 		// printf("name as is: %#x\n", *(uint32_t*)(finram + fp));
 		// printf("header name is: %#x\n", header_name);
 		// figure out the type of chunk
-	        switch(header_name){
+	        switch (*(uint32_t*) (&finram[fp])) {
 			
 		case B3D_TEXS_CHUNK: 
 		        printf("here at TEXS\n");
@@ -401,21 +398,24 @@ int B3DLoader(char* file, struct scpmodel* p){
 			break;
 		}
 	}
-
 	// everything is parsed now need to load info into gpu
 	// and into scp model
 	p->num_of_meshes = num_mesh;
 	p->vabuff = SCPMALLOC(sizeof(GLuint) * num_mesh);
 	p->trigscount = SCPMALLOC(sizeof(unsigned) * num_mesh);
 
-	if(p->vabuff || p->trigscount){
-	  errormsg("malloc failed to allocate for vabuff\n");
+	if ((!p->vabuff) || (!p->trigscount)){
+		
 	  ClearAllocation(num_mesh, mesh_buff);
+	  errormsg("malloc failed to allocate for vabuff\n");
 	  return -1;
 	}
 
+
 	// one mesh <-> one VAO
 	glGenVertexArrays(num_mesh, p->vabuff);
+
+
 	
 	for(int i = 0; i < num_mesh; i++)
 	{
@@ -469,11 +469,10 @@ int B3DLoader(char* file, struct scpmodel* p){
 
 	
 		
-	p->sprog.program = shaderprogs[0];
-	p->sprog.unicount = 0; // the fuck is this for?
-	p->sprog.uniforms = NULL; // ??
-	
+	p->sprog = 0;	
 
 	ClearAllocation(num_mesh, mesh_buff);
+
+
 	return 0;
 }

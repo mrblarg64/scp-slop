@@ -18,68 +18,73 @@ void keyCallbackFunction(GLFWwindow *window, int key, int scancode, int action, 
 	switch (key)
 	{
 	case GLFW_KEY_DOWN:
-	  if (action==GLFW_PRESS)//||action==GLFW_REPEAT)
-	    {
-	      printf("go down\n");
-	      //loadb3d("resource/models/173/173_2.b3d");
-	    }
-	  break;
+		if (action==GLFW_PRESS)//||action==GLFW_REPEAT)
+		{
+			printf("go down\n");
+			//loadb3d("resource/models/173/173_2.b3d");
+		}
+		break;
 
 	case GLFW_KEY_ESCAPE:
-	  if(action == GLFW_PRESS)
-	    glfwSetWindowShouldClose(window, true);
+		if(action == GLFW_PRESS)
+			glfwSetWindowShouldClose(window, true);
 
-	  break;
+		break;
 	}
 }
 
 
 void framebufferSizeCallback(GLFWwindow* w, int width, int height)
 {
-  glViewport(0,0,width,height);
+	glViewport(0,0,width,height);
 }
 
 
 int loadUp(GLFWwindow* w, struct scpCamera* cam, struct scpPlayer* player)
-{  
+{
+	int bretval;
+
 	(cam->pos)[0]=0;
 	(cam->pos)[1]=0;
 	(cam->pos)[2]=0;
 	cam->fov=65.0f;
-	cam->zNear=0.01f;
-	cam->zFar=100.0f;
+	cam->znear=0.01f;
+	cam->zfar=100.0f;
 
-	
-	if(B3DLoader("resource/models/096/scp096.b3d", &(player->model)))
+	if(!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
 	{
-	  // will have to clean up player allocations
-	  errormsg("B3D loader error\n");
-	  return -1;
+		errormsg("Failed to initialize GLAD\n");
+		return -1;
+	}
+
+	if(compileshaders())
+	{
+		// failed to compile
+		return -1;
+	}
+
+	player->model = SCPMALLOC(sizeof(struct scpmodel));
+	bretval = B3DLoader("resource/models/096/scp096.b3d", player->model);
+	if(bretval)
+	{
+		printf("%i\n", bretval);
+		// will have to clean up player allocations
+		errormsg("B3D loader error\n");
+		return -1;
 	}
 	
+
+	//window=glfwCreateWindow(1366,768,"hello glfw-3",NULL,NULL);
   
-  if(!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
-  {
-    errormsg("Failed to initialize GLAD\n");
-    return -1;
-  }
+	glViewport(0,0,640,480);
+	//glfwEnable(GLFW_STICKY_KEYS); 
+	glfwSetFramebufferSizeCallback(w, framebufferSizeCallback);
+	glfwSetKeyCallback(w, keyCallbackFunction);
+	//vsync...
+	glfwSwapInterval(1);
 
-  //window=glfwCreateWindow(1366,768,"hello glfw-3",NULL,NULL);
-  
-  glViewport(0,0,640,480);
-  //glfwEnable(GLFW_STICKY_KEYS); 
-  glfwSetFramebufferSizeCallback(w, framebufferSizeCallback);
-  glfwSetKeyCallback(w, keyCallbackFunction);
-    //vsync...
-  glfwSwapInterval(1);
 
-  if(compileshaders())
-  {
-    // failed to compile
-    return -1;
-  }
-
-  return 0;
+	return 0;
 }
 
 
@@ -98,14 +103,14 @@ GLFWwindow* openWindow()
 	/*
 	  For Mac OS X to compile we need
 	  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	 */
+	*/
 	
 	retval = glfwCreateWindow(640,480,"SCP",NULL,NULL);
 	if(retval == NULL)
 	{
-	  errormsg("Failed to create Window\n");
-	  glfwTerminate();
-	  return NULL;
+		errormsg("Failed to create Window\n");
+		glfwTerminate();
+		return NULL;
 	}
 
 	glfwMakeContextCurrent(retval);
@@ -117,15 +122,15 @@ void cleanUp(struct scpPlayer* p)
 {
 	printf("k bye\n");
 	glfwTerminate();
-	SCPFREE(p->model.trigscount);
-	SCPFREE(p->model.vabuff);
+	//SCPFREE(p->model.trigscount);
+	//SCPFREE(p->model.vabuff);
 	printf("it worked bitch\n");
 }
 
 int main(int argc, char *argv[])
 {
-  	int width;
-	int height;
+  	int width = 640;
+	int height = 480;
 	double time;
 	float fps;
 	struct scpPlayer player;
@@ -139,13 +144,13 @@ int main(int argc, char *argv[])
 	
 	window = openWindow();
 	if(window == NULL)
-	  return -1;
+		return -1;
 	
 	if(loadUp(window, &cam, &player))
 	{
-	  // error
-	  glfwTerminate();
-	  return -1;
+		// error
+		glfwTerminate();
+		return -1;
 	}
 
 	osinit();

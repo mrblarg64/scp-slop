@@ -9,10 +9,10 @@ struct scpPlayer
 	//todo defuculate how orientation is stored
 	//want to have halo style gun aimed at orientation and skeletal animation
 	//eventuallay
-	float position[3];
-	float rotation[2];//yaw[0] pitch[1]
+	float pos[3];
+	float rot[2];//yaw[0] pitch[1] roll[2](todo)
 	char type;
-	struct scpmodel model;
+	struct scpmodel *model;
 };
 
 #endif

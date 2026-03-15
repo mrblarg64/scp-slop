@@ -18,7 +18,7 @@ struct scpmodel
   //unsigned* vbuff;
 	GLuint* vabuff;
   //	unsigned* ibuff;
-	struct scpshader sprog;
+        unsigned char sprog;
 };
 
 #endif

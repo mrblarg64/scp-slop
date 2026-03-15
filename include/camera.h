@@ -7,11 +7,12 @@
 struct scpCamera
 {
 	float pos[3];
-	float rot[4][4];
+	//float rot[4][4];
+	float rot[2];//yaw[0] pitch[1] roll[2](todo)
 	float proj[4][4];
 	float fov;
-	float zNear;
-	float zFar;
+	float znear;
+	float zfar;
 };
 
 #endif
