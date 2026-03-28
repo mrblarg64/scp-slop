@@ -1,9 +1,9 @@
 default: scp
 
-override CFLAGS += -Wall -Wextra -Wno-unused-variable -Wno-unused-parameter -pipe -march=native -Ofast -flto -fuse-linker-plugin -MMD -I./include
-override LDFLAGS += -lm -lGL -lglfw -march=native -O3 -flto -fuse-linker-plugin
-#override CFLAGS += -Wall -Wextra -Wno-unused-variable -Wno-unused-parameter -pipe -march=native -g -Og -MMD -I./include
-#override LDFLAGS += -lm -lGL -lglfw -march=native -g -Og
+#override CFLAGS += -Wall -Wextra -Wno-unused-variable -Wno-unused-parameter -pipe -march=native -Ofast -flto -fuse-linker-plugin -MMD -I./include
+#override LDFLAGS += -lm -lGL -lglfw -march=native -O3 -flto -fuse-linker-plugin
+override CFLAGS += -Wall -Wextra -Wno-unused-variable -Wno-unused-parameter -pipe -march=native -g -Og -MMD -I./include
+override LDFLAGS += -lm -lGL -lglfw -march=native -g -Og
 
 CC=gcc
 

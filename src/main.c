@@ -47,7 +47,7 @@ int loadUp(GLFWwindow* w, struct scpCamera* cam, struct scpPlayer* player)
 	(cam->pos)[0]=0;
 	(cam->pos)[1]=0;
 	(cam->pos)[2]=0;
-	cam->fov=65.0f;
+	cam->fov=1.650f;
 	cam->znear=0.01f;
 	cam->zfar=100.0f;
 
@@ -136,11 +136,15 @@ int main(int argc, char *argv[])
 	struct scpPlayer player;
 	//delete variables below this comment
 	//they are temporary
-	struct scpCamera cam;
+	struct scpCamera cam = {0};
 
 	GLFWwindow *window;
 
 	__builtin_memset(&player, 0, sizeof(player));
+
+	cam.fov = 1.65f;
+	cam.znear = 0.1f;
+	cam.zfar = 100.0f;
 	
 	window = openWindow();
 	if(window == NULL)
