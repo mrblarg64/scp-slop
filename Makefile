@@ -22,8 +22,11 @@ scp : $(OBJS)
 #objs/test1.o: test/test1.c
 #	$(CC) $(CFLAGS) -c $< -o $@
 
-obj/%.o : src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@	
+obj/%.o : src/%.c obj
+	$(CC) $(CFLAGS) -c $< -o $@
+
+obj:
+	mkdir $@
 
 
 # gay
