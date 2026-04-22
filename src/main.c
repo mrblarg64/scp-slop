@@ -7,6 +7,7 @@
 #include "b3dloader.h"
 #include "camera.h"
 #include "player.h"
+#include "stb_image.h"
 
 
 #include <glad/glad.h>
@@ -64,14 +65,14 @@ int loadUp(GLFWwindow* w, struct scpCamera* cam, struct scpPlayer* player)
 	}
 
 	player->model = SCPMALLOC(sizeof(struct scpmodel));
-	bretval = B3DLoader("resource/models/096/scp096.b3d", player->model);
-	if(bretval)
+	// bretval = B3DLoader("resource/models/096/scp096.b3d", player->model);
+	/*if(bretval)
 	{
 		printf("%i\n", bretval);
 		// will have to clean up player allocations
 		errormsg("B3D loader error\n");
 		return -1;
-	}
+	} */
 	
 
 	//window=glfwCreateWindow(1366,768,"hello glfw-3",NULL,NULL);
@@ -139,6 +140,10 @@ int main(int argc, char *argv[])
 	struct scpCamera cam = {0};
 
 	GLFWwindow *window;
+
+	unsigned int texture_skybox_id;
+	glGenTextures(1, &texture_skybox_id);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, texture_skybox_id);
 
 	__builtin_memset(&player, 0, sizeof(player));
 

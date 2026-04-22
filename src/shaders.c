@@ -28,14 +28,14 @@ const char *const vshaders[] = {
 
 
 //GLuint shaderprogs[SCP_SHADER_COUNT];
-
 struct scpshader scpvshads;
 struct scpshader scpfshads;
 
 struct scpshader scpshad[SCP_SHADER_COUNT];
 
-const struct scpshadersrc shadersrc[] = {
-	{
+const struct scpshadersrc shadersrc[] =
+{
+        {
 		.vsrc = vshaders[0],
 		.fsrc = fshaders[0],
 		.unicount = 1,
