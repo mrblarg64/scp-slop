@@ -130,6 +130,7 @@ void cleanUp(struct scpPlayer* p)
 
 int main(int argc, char *argv[])
 {
+        
   	int width = 640;
 	int height = 480;
 	double time;
@@ -141,9 +142,43 @@ int main(int argc, char *argv[])
 
 	GLFWwindow *window;
 
+	/* sky box shit, can relocate to better spot brain */
+	int skybox_width, skybox_height, skybox_nrChannels;
+	unsigned char *data;
 	unsigned int texture_skybox_id;
+	const char* texture_faces[] = {
+	  "resource/skybox/right.jpg",
+	  "resource/skybox/left.jpg",
+	  "resource/skybox/top.jpg",
+	  "resource/skybox/bottom.jpg",
+	  "resource/skybox/back.jpg",
+	  "resource/skybox/front.jpg"};
 	glGenTextures(1, &texture_skybox_id);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, texture_skybox_id);
+
+	for(int i = 0; i < 6; i++)
+	{
+	   data = stbi_load(textures_faces[i], &skybox_width, &skybox_height, \
+			   &skybox_nrChannels, 0);
+	   if(!data)
+	     {
+	       errormsg("invalid path for cubemap");
+	       stbi_image_free(data);
+	       retrun -1;
+	     }
+	   glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, skybox_width, \
+			skybox_height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	   stbi_image_free(data);
+	  
+	}
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	/*---------------------------------------------------- */
 
 	__builtin_memset(&player, 0, sizeof(player));
 

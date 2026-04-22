@@ -3,15 +3,24 @@
 #include "shaders.h"
 #include "errormsg.h"
 
-
-const char *const fshaders[] = {
+/* index 1 is the skybox shader,
+ marco should be used, but imma lazy*/
+const char *const fshaders[] =
+{
 	"#version 330 core\n\n"
 	"in vec4 inColor;\n"
 	"out vec3 color;\n"
 	"\n"
 	"void main(void){\n"
 	"  color = vec3(inColor.x, inColor.y, inColor.z);\n"
-	"}"};
+	"}", // skybox fragment shader below
+	"#version 330 core\n\n"
+	"in vec3 texcoord\n;" // textureDir is used to sample
+	"uniform samplerCube cubemap\n;"
+	"void main(){\n"
+	"FragColor = texture(cubemap, texcoord);\n"
+	"}"
+};
 
 const char *const vshaders[] = {
 	"#version 330 core\n\n"
@@ -24,7 +33,16 @@ const char *const vshaders[] = {
 	"\n"
 	"void main(void){\n"
 	"  gl_Position = mvp * vec4(pos, 1.0);\n"
-	"}"};
+	"}", // skybox vertex shader below
+	"#version 330 core\n"
+	"in vec3 apos;\n"
+	"out vec texcoord;\n"
+	"\n"
+	"void main(){\n"
+	" texcoord  = apos;\n"
+	" gl_Position = apos;\n"
+	"}"
+};
 
 
 //GLuint shaderprogs[SCP_SHADER_COUNT];
