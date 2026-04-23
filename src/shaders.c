@@ -28,14 +28,14 @@ const char *const vshaders[] = {
 	"layout (location = 1) in vec3 normal;\n"
 	"layout (location = 2) in vec4 color;\n"
 	"layout (location = 3) in vec2 tex;\n"
-	"uniform mat4 mvp;\n"
+	"uniform mat4 mvp;\n"	
 	"\n"
 	"\n"
 	"void main(void){\n"
 	"  gl_Position = mvp * vec4(pos, 1.0);\n"
 	"}", // skybox vertex shader below
 	"#version 330 core\n"
-	"in vec3 apos;\n"
+	"layout (location = 0) in vec3 apos;\n"
 	"out vec texcoord;\n"
 	"\n"
 	"void main(){\n"
@@ -60,7 +60,14 @@ const struct scpshadersrc shadersrc[] =
 		.uninames = {"mvp"},
 		.unitypes = {SCP_GL_UNIFORM_MATRIX_4FV}
 	},
-	NULL
+	{
+		.vsrc = vshaders[1],
+		.fsrc = fshaders[1],
+		.unicount = 1,
+		.uninames = {"samplerCube"},
+		.unitype = {SCP_GL_UNIFORM_1I};
+
+	}, NULL
 };
 
 int compileshaders()

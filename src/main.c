@@ -101,10 +101,10 @@ GLFWwindow* openWindow()
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT,GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE,GLFW_OPENGL_CORE_PROFILE);
 
-	/*
-	  For Mac OS X to compile we need
-	  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	*/
+       
+	#ifdef __APPLE__  
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	#endif
 	
 	retval = glfwCreateWindow(640,480,"SCP",NULL,NULL);
 	if(retval == NULL)
@@ -131,8 +131,8 @@ void cleanUp(struct scpPlayer* p)
 int main(int argc, char *argv[])
 {
         
-  	int width = 640;
-	int height = 480;
+  	int width = 1024;
+	int height = 1024;
 	double time;
 	float fps;
 	struct scpPlayer player;
@@ -143,9 +143,52 @@ int main(int argc, char *argv[])
 	GLFWwindow *window;
 
 	/* sky box shit, can relocate to better spot brain */
+	unsigned int skyVBO, skyEBO, skyVAO;
 	int skybox_width, skybox_height, skybox_nrChannels;
 	unsigned char *data;
 	unsigned int texture_skybox_id;
+	const float sky_vcoord[] = {
+		-1.0f, -1.0f, 1.0f,
+		1.0f, -1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,
+		-1.0f, 1.0f, 1.0f,
+		-1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+		1.0f, 1.0f, -1.0f,
+		-1.0f, 1.0f, -1.0f		
+	};
+
+	const int sky_indices[] = {
+		0,1,2,
+		0,2,3, // front face
+		1,5,6,
+		6,2,1, // right face
+		4,5,6,
+		6,7,4, // back face
+		3,0,4,
+		4,7,3 // left face		
+	};
+
+	glGenVertexArrays(1, &skyVAO);
+
+	glGenBuffers(1, &skyVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, skyVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(sky_vcoord),\
+		     sky_vcoord, GL_STATIC_DRAW);
+		
+	glGenBuffers(1, &skyEBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, skyEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(sky_indices),\
+		     sky_indices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT,GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	
+        // delocate
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+       	
 	const char* texture_faces[] = {
 	  "resource/skybox/right.jpg",
 	  "resource/skybox/left.jpg",
@@ -158,17 +201,19 @@ int main(int argc, char *argv[])
 
 	for(int i = 0; i < 6; i++)
 	{
-	   data = stbi_load(textures_faces[i], &skybox_width, &skybox_height, \
-			   &skybox_nrChannels, 0);
-	   if(!data)
-	     {
-	       errormsg("invalid path for cubemap");
-	       stbi_image_free(data);
-	       retrun -1;
-	     }
-	   glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, skybox_width, \
-			skybox_height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-	   stbi_image_free(data);
+		
+		data = stbi_load(texture_faces[i], &skybox_width, &skybox_height, \
+				 &skybox_nrChannels, 0);
+		if(!data)
+		{
+			errormsg("invalid path for cubemap");
+			stbi_image_free(data);
+			return -1;
+		}
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, \
+			     skybox_width, skybox_height, 0,		\
+			     GL_RGB, GL_UNSIGNED_BYTE, data);
+		stbi_image_free(data);
 	  
 	}
 
