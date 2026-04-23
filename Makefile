@@ -1,4 +1,5 @@
 default: scp
+PHONY: clean
 
 #override CFLAGS += -Wall -Wextra -Wno-unused-variable -Wno-unused-parameter -pipe -march=native -Ofast -flto -fuse-linker-plugin -MMD -I./include
 #override LDFLAGS += -lm -lGL -lglfw -march=native -O3 -flto -fuse-linker-plugin
@@ -16,24 +17,12 @@ DEPENDS = $(OBJS:.o=.d)
 scp : $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) -o scp
 
-#testparser : objs/b3dloader.o objs/test1.o objs/scp-os.o objs/errormsg.o 
-#	$(CC) $^ -o testparser
 
-#objs/test1.o: test/test1.c
-#	$(CC) $(CFLAGS) -c $< -o $@
-
-obj/%.o : src/%.c obj
+obj/%.o : src/%.c | obj
 	$(CC) $(CFLAGS) -c $< -o $@
 
 obj:
-	mkdir $@
-
-
-# gay
-#$(OBJS): $(SRCS)
-#	$(CC) $(CFLAGS) -c -o $@ $(SRCS)
-
-
+	mkdir -p $@
 
 clean:
 	$(RM) scp obj/*.o obj/*.d 

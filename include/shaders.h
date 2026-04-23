@@ -47,7 +47,7 @@ struct scpshader
 {
 	GLuint program;
 	unsigned char unicount;
-	GLuint uniforms[SCP_MAX_UNIFORM_PER_SHADER];
+	GLint uniforms[SCP_MAX_UNIFORM_PER_SHADER];
 	unsigned char unitypes[SCP_MAX_UNIFORM_PER_SHADER];
 };
 

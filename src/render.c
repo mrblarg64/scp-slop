@@ -9,7 +9,7 @@
 // if not dog GL_DEPTH_TEST should be enabled
 // if dog GL_DEPTH_TEST will be disabled and should draw for players will have different logic
 //void render(int width, int height, struct camera *c, struct players *p, struct world *w, struct doors *d, struct items *i
-void render(int width, int height, struct scpCamera *camera, struct scpPlayer *players)
+void render(int width, int height, struct scpCamera *camera, struct scpPlayer *players, unsigned vao)
 {
 	float tanfov;
 	//float m[4][4];
@@ -30,17 +30,19 @@ void render(int width, int height, struct scpCamera *camera, struct scpPlayer *p
 	//todo don't recalculate as much of this shit every frame
 	//(fov, znear, etc..)
 	//like some dumbass using glm and shit grade libraries
-	SCP_MATRIX_CAMERA_F((*camera), v);
-	SCP_MATRIX_PERSPECTIVE_F((*camera), width, height, p);
-	SCP_MATRIX_MULT_SQUARE_F(4, p, v, mvp);
+	//SCP_MATRIX_CAMERA_F((*camera), v);
+	//SCP_MATRIX_PERSPECTIVE_F((*camera), width, height, p);
+	//SCP_MATRIX_MULT_SQUARE_F(4, p, v, mvp);
 
 
 	//comment this for legit builds
-	glClearColor(0,0,0,0);
-	glClear(GL_COLOR_BUFFER_BIT);
+	// glClearColor(0,0,0,0);
+	//glClear(GL_COLOR_BUFFER_BIT);
 
+	
 	//p is supposed to be a linked list
 	//but this will do for now
+	players = NULL; // don't need that shit right now
 	if (players)
 	{
 		for(unsigned i = 0; i < players->model->num_of_meshes; i++)
@@ -61,5 +63,13 @@ void render(int width, int height, struct scpCamera *camera, struct scpPlayer *p
 			glDrawElements(GL_TRIANGLES, players->model->trigscount[i], GL_UNSIGNED_INT, 0);
 		}
 	}
+
+	// skybox here, render last!
+	glUseProgram(scpshad[1].program);
+	glBindVertexArray(vao); // sky vao
+	glDrawElements(GL_TRIANGLES,12,GL_UNSIGNED_INT,0);
+	glBindVertexArray(0);
+	
+
 	return;
 }

@@ -77,14 +77,12 @@ int loadUp(GLFWwindow* w, struct scpCamera* cam, struct scpPlayer* player)
 
 	//window=glfwCreateWindow(1366,768,"hello glfw-3",NULL,NULL);
   
-	glViewport(0,0,640,480);
+	glViewport(0,0,1024,1024);
 	//glfwEnable(GLFW_STICKY_KEYS); 
 	glfwSetFramebufferSizeCallback(w, framebufferSizeCallback);
 	glfwSetKeyCallback(w, keyCallbackFunction);
 	//vsync...
 	glfwSwapInterval(1);
-
-
 	return 0;
 }
 
@@ -106,7 +104,7 @@ GLFWwindow* openWindow()
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	#endif
 	
-	retval = glfwCreateWindow(640,480,"SCP",NULL,NULL);
+	retval = glfwCreateWindow(1024,1024,"SCP",NULL,NULL);
 	if(retval == NULL)
 	{
 		errormsg("Failed to create Window\n");
@@ -142,20 +140,40 @@ int main(int argc, char *argv[])
 
 	GLFWwindow *window;
 
+	
+	__builtin_memset(&player, 0, sizeof(player));
+
+	cam.fov = 1.65f;
+	cam.znear = 0.1f;
+	cam.zfar = 100.0f;
+	
+	window = openWindow();
+	if(window == NULL) {return -1;}
+	
+	if(loadUp(window, &cam, &player))
+	{
+		// error
+		glfwTerminate();
+		return -1;
+	}
+
+	osinit();
+
 	/* sky box shit, can relocate to better spot brain */
 	unsigned int skyVBO, skyEBO, skyVAO;
 	int skybox_width, skybox_height, skybox_nrChannels;
 	unsigned char *data;
 	unsigned int texture_skybox_id;
 	const float sky_vcoord[] = {
-		-1.0f, -1.0f, 1.0f,
-		1.0f, -1.0f, 1.0f,
-		1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f,
+		// I reveresed z direction, +z is away from you
 		-1.0f, -1.0f, -1.0f,
 		1.0f, -1.0f, -1.0f,
 		1.0f, 1.0f, -1.0f,
-		-1.0f, 1.0f, -1.0f		
+		-1.0f, 1.0f, -1.0f,
+		-1.0f, -1.0f, 1.0f,
+		1.0f, -1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,
+		-1.0f, 1.0f, 1.0f		
 	};
 
 	const int sky_indices[] = {
@@ -166,10 +184,15 @@ int main(int argc, char *argv[])
 		4,5,6,
 		6,7,4, // back face
 		3,0,4,
-		4,7,3 // left face		
+		4,7,3, // left face
+		3,2,6,
+		6,7,3, // top face
+		0,1,5,
+		5,4,0, // bottom face
 	};
 
 	glGenVertexArrays(1, &skyVAO);
+	glBindVertexArray(skyVAO);
 
 	glGenBuffers(1, &skyVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, skyVBO);
@@ -225,24 +248,6 @@ int main(int argc, char *argv[])
 
 	/*---------------------------------------------------- */
 
-	__builtin_memset(&player, 0, sizeof(player));
-
-	cam.fov = 1.65f;
-	cam.znear = 0.1f;
-	cam.zfar = 100.0f;
-	
-	window = openWindow();
-	if(window == NULL)
-		return -1;
-	
-	if(loadUp(window, &cam, &player))
-	{
-		// error
-		glfwTerminate();
-		return -1;
-	}
-
-	osinit();
 
 	/* main loop  */
 	while (!glfwWindowShouldClose(window))
@@ -250,14 +255,14 @@ int main(int argc, char *argv[])
 		time=glfwGetTime();
 		
 
-	        render(width,height,&cam,&player);
+	        render(width,height,&cam,&player,skyVAO);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
 	/* --------- */
-		
+      	
 	cleanUp(&player);
 	return 0;
 }

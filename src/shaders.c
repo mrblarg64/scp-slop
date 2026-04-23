@@ -3,8 +3,9 @@
 #include "shaders.h"
 #include "errormsg.h"
 
+
 /* index 1 is the skybox shader,
- marco should be used, but imma lazy*/
+ marco should be used, but i dont care */
 const char *const fshaders[] =
 {
 	"#version 330 core\n\n"
@@ -16,9 +17,10 @@ const char *const fshaders[] =
 	"}", // skybox fragment shader below
 	"#version 330 core\n\n"
 	"in vec3 texcoord\n;" // textureDir is used to sample
+	"out vec4 fragcolour;\n"
 	"uniform samplerCube cubemap\n;"
 	"void main(){\n"
-	"FragColor = texture(cubemap, texcoord);\n"
+	" fragcolour = texture(cubemap, texcoord);\n"
 	"}"
 };
 
@@ -34,13 +36,13 @@ const char *const vshaders[] = {
 	"void main(void){\n"
 	"  gl_Position = mvp * vec4(pos, 1.0);\n"
 	"}", // skybox vertex shader below
-	"#version 330 core\n"
+	"#version 330 core\n\n"
 	"layout (location = 0) in vec3 apos;\n"
-	"out vec texcoord;\n"
+	"out vec3 texcoord;\n"
 	"\n"
 	"void main(){\n"
 	" texcoord  = apos;\n"
-	" gl_Position = apos;\n"
+	" gl_Position = vec4(apos,1);\n"
 	"}"
 };
 
@@ -51,8 +53,7 @@ struct scpshader scpfshads;
 
 struct scpshader scpshad[SCP_SHADER_COUNT];
 
-const struct scpshadersrc shadersrc[] =
-{
+const struct scpshadersrc shadersrc[] = {
         {
 		.vsrc = vshaders[0],
 		.fsrc = fshaders[0],
@@ -64,10 +65,9 @@ const struct scpshadersrc shadersrc[] =
 		.vsrc = vshaders[1],
 		.fsrc = fshaders[1],
 		.unicount = 1,
-		.uninames = {"samplerCube"},
-		.unitype = {SCP_GL_UNIFORM_1I};
-
-	}, NULL
+		.uninames = {"cubemap"},
+		.unitypes = {SCP_GL_UNIFORM_1I}
+	}
 };
 
 int compileshaders()
@@ -97,6 +97,7 @@ int compileshaders()
 		{
 			GLchar err[1024];
 			glGetShaderInfoLog(vshader, 1024, NULL, err);
+			errormsg("vertex shader error: ");
 			errormsg(err);
 			return -1;
 		}
@@ -117,6 +118,7 @@ int compileshaders()
 		{
 			GLchar err[1024];
 			glGetShaderInfoLog(fshader, 1024, NULL, err);
+			errormsg("fragment shader error: ");
 			errormsg(err);
 			puts(shadersrc[x].fsrc);
 			return -1;
@@ -138,7 +140,7 @@ int compileshaders()
 		curuni = 0;
 		while (curuni != scpshad[x].unicount)
 		{
-			scpshad[x].uniforms[curuni] = glGetUniformLocation(scpshad[x].program, shadersrc[x].uninames[curuni]);
+			scpshad[x].uniforms[curuni] = glGetUniformLocation(scpshad[x].program,shadersrc[x].uninames[curuni]);
 			if (scpshad[x].uniforms[curuni] == -1)
 			{
 				errormsg("glGetUniformLocation() FUCK!");
