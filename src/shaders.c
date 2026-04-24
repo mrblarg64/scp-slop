@@ -44,7 +44,7 @@ const char *const vshaders[] = {
 	"void main(){\n"
 	" vec3 rot_pos = rot * apos;\n"
 	" texcoord  = apos;\n"
-	" gl_Position = vec4(rot_pos,1);\n"
+	" gl_Position = 0.5 * vec4(rot_pos,2);\n"
 	"}"
 };
 
