@@ -1,4 +1,5 @@
-
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 #include <stdio.h>
 
 #include "scp-os.h"
@@ -9,12 +10,38 @@
 #include "player.h"
 #include "stb_image.h"
 
+// global cause I'm retardmaxxing
+static float last_x = 512f;
+static float last_y = 512f;
+static float yaw = -90f;
+static float pitch = 0f;
+// maybe put global const window height and width here
+// cause I feel like that's a good idea
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+static void mouseCallback(GLFWwindow* w, double xpos, double ypos)
+{
+	
+	float xoffset = xpos - last_x;
+	float yoffset = last_y - ypos; // 0 at the top left corner
+	last_x = xpos;
+	last_y = ypos;
+
+	
+	xoffset *= 0.1f; // sensitivity set here
+	yoffset *= 0.1f;
+
+	yaw += xoffset;
+	pitch += yoffset;
+
+	// constraints to pitch
+	if(pitch > 89.0f)
+		pitch = 89.0f;
+	if(pitch < -89.0f)
+		pitch = -89.0f;
+}
 
 // this function needs to be in haskell notation, not readable as is
-void keyCallbackFunction(GLFWwindow *window, int key, int scancode, int action, int mods)
+static void keyCallbackFunction(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
 	switch (key)
 	{
@@ -35,10 +62,11 @@ void keyCallbackFunction(GLFWwindow *window, int key, int scancode, int action, 
 }
 
 
-void framebufferSizeCallback(GLFWwindow* w, int width, int height)
+static void framebufferSizeCallback(GLFWwindow* w, int width, int height)
 {
 	glViewport(0,0,width,height);
 }
+
 
 
 int loadUp(GLFWwindow* w, struct scpCamera* cam, struct scpPlayer* player)
@@ -83,6 +111,10 @@ int loadUp(GLFWwindow* w, struct scpCamera* cam, struct scpPlayer* player)
 	glfwSetKeyCallback(w, keyCallbackFunction);
 	//vsync...
 	glfwSwapInterval(1);
+
+	// mouse input
+	glfwInputMode(w, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfSetCursorPosCallback(w, mouseCallback);
 	return 0;
 }
 
@@ -165,15 +197,14 @@ int main(int argc, char *argv[])
 	unsigned char *data;
 	unsigned int texture_skybox_id;
 	const float sky_vcoord[] = {
-		// I reveresed z direction, +z is away from you
-		-1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,
-		1.0f, 1.0f, -1.0f,
-		-1.0f, 1.0f, -1.0f,
 		-1.0f, -1.0f, 1.0f,
 		1.0f, -1.0f, 1.0f,
 		1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f		
+		-1.0f, 1.0f, 1.0f,
+		-1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+		1.0f, 1.0f, -1.0f,
+		-1.0f, 1.0f, -1.0f		
 	};
 
 	const int sky_indices[] = {
