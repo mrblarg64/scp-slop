@@ -38,11 +38,13 @@ const char *const vshaders[] = {
 	"}", // skybox vertex shader below
 	"#version 330 core\n\n"
 	"layout (location = 0) in vec3 apos;\n"
+	"uniform mat3 rot;\n"
 	"out vec3 texcoord;\n"
 	"\n"
 	"void main(){\n"
+	" vec3 rot_pos = rot * apos;\n"
 	" texcoord  = apos;\n"
-	" gl_Position = vec4(apos,1);\n"
+	" gl_Position = vec4(rot_pos,1);\n"
 	"}"
 };
 
@@ -64,9 +66,9 @@ const struct scpshadersrc shadersrc[] = {
 	{
 		.vsrc = vshaders[1],
 		.fsrc = fshaders[1],
-		.unicount = 1,
-		.uninames = {"cubemap"},
-		.unitypes = {SCP_GL_UNIFORM_1I}
+		.unicount = 2,
+		.uninames = {"cubemap", "rot"},
+		.unitypes = {SCP_GL_UNIFORM_1I, SCP_GL_UNIFORM_MATRIX_3FV}
 	}
 };
 

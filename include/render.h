@@ -4,6 +4,7 @@
 #include "player.h"
 #include "camera.h"
 
-void render(int width, int height, struct scpCamera *camera, struct scpPlayer *p, unsigned vao);
+void render(int width, int height, struct scpCamera *camera, struct scpPlayer *p, unsigned vao,\
+	    float lyaw, float lpitch);
 
 #endif

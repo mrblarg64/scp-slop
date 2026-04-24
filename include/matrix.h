@@ -1,5 +1,4 @@
 #ifndef SCP_MATRIX_H
-
 #define SCP_MATRIX_H
 
 #define SCP_MATRIX_MULT_SQUARE_F(size, a, b, sum) do{			\

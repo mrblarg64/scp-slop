@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 #define SCP_SHADER_COUNT 2
-#define SCP_MAX_UNIFORM_PER_SHADER 1
+#define SCP_MAX_UNIFORM_PER_SHADER 2
 
 #define SCP_GL_UNIFORM_1F 0
 #define SCP_GL_UNIFORM_2F 1

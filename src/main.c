@@ -11,15 +11,17 @@
 #include "stb_image.h"
 
 // global cause I'm retardmaxxing
-static float last_x = 512f;
-static float last_y = 512f;
-static float yaw = -90f;
-static float pitch = 0f;
+static float last_x = 512.0f;
+static float last_y = 512.0f;
+static float yaw = -90.0f;
+static float pitch = 0.0f;
 // maybe put global const window height and width here
 // cause I feel like that's a good idea
 
 static void mouseCallback(GLFWwindow* w, double xpos, double ypos)
 {
+
+	// 	printf("mouse movement detected\n");
 	
 	float xoffset = xpos - last_x;
 	float yoffset = last_y - ypos; // 0 at the top left corner
@@ -113,8 +115,11 @@ int loadUp(GLFWwindow* w, struct scpCamera* cam, struct scpPlayer* player)
 	glfwSwapInterval(1);
 
 	// mouse input
-	glfwInputMode(w, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	glfSetCursorPosCallback(w, mouseCallback);
+      	glfwSetCursorPosCallback(w, mouseCallback);
+	// below line doesn't work in wsl, I might have to start coding in windows :-(
+	//glfwSetInputMode(w, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	
+	
 	return 0;
 }
 
@@ -197,14 +202,15 @@ int main(int argc, char *argv[])
 	unsigned char *data;
 	unsigned int texture_skybox_id;
 	const float sky_vcoord[] = {
-		-1.0f, -1.0f, 1.0f,
-		1.0f, -1.0f, 1.0f,
-		1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f,
+		// reversed z direction cause inside cube
 		-1.0f, -1.0f, -1.0f,
 		1.0f, -1.0f, -1.0f,
 		1.0f, 1.0f, -1.0f,
-		-1.0f, 1.0f, -1.0f		
+		-1.0f, 1.0f, -1.0f,
+		-1.0f, -1.0f, 1.0f,
+		1.0f, -1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,
+		-1.0f, 1.0f, 1.0f		
 	};
 
 	const int sky_indices[] = {
@@ -286,7 +292,7 @@ int main(int argc, char *argv[])
 		time=glfwGetTime();
 		
 
-	        render(width,height,&cam,&player,skyVAO);
+	        render(width,height,&cam,&player,skyVAO, yaw, pitch);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

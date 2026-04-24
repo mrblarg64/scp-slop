@@ -9,13 +9,15 @@
 // if not dog GL_DEPTH_TEST should be enabled
 // if dog GL_DEPTH_TEST will be disabled and should draw for players will have different logic
 //void render(int width, int height, struct camera *c, struct players *p, struct world *w, struct doors *d, struct items *i
-void render(int width, int height, struct scpCamera *camera, struct scpPlayer *players, unsigned vao)
+void render(int width, int height, struct scpCamera *camera, struct scpPlayer *players, unsigned vao,\
+	    float lyaw, float lpitch)
 {
 	float tanfov;
 	//float m[4][4];
 	float v[4][4];
 	float p[4][4];
 	float mvp[4][4];
+	float rot[3][3]; // matrix is only yaw and pitch
 	unsigned char curuni;
 
 	//proj matrix
@@ -65,7 +67,19 @@ void render(int width, int height, struct scpCamera *camera, struct scpPlayer *p
 	}
 
 	// skybox here, render last!
+	// can use variables as to not recaluate
+	rot[0][0] = __builtin_cos(-lyaw * M_PI / 180.0f) * __builtin_cos(-lpitch * M_PI / 180.0f);
+	rot[0][1] = -1 * __builtin_sin(-lyaw * M_PI / 180.0f); 
+	rot[0][2] = __builtin_cos(-lyaw * M_PI / 180.0f) * __builtin_sin(-lpitch * M_PI / 180.0f);
+	rot[1][0] = __builtin_sin(-lyaw * M_PI / 180.0f) * __builtin_cos(-lpitch * M_PI / 180.0f);
+	rot[1][1] = __builtin_cos(-lyaw * M_PI / 180.0f);
+	rot[1][2] = __builtin_sin(-lpitch * M_PI / 180.0f) * __builtin_sin(-lyaw * M_PI / 180.0f);
+	rot[2][0] = -1 *  __builtin_sin(-lpitch * M_PI / 180.0f);
+	rot[2][1] = 0;
+	rot[2][2] = __builtin_cos(-lpitch * M_PI / 180.0f);
+		
 	glUseProgram(scpshad[1].program);
+	glUniformMatrix3fv(scpshad[1].uniforms[1], 1, GL_FALSE, &rot[0][0]);
 	glBindVertexArray(vao); // sky vao
 	glDrawElements(GL_TRIANGLES,12,GL_UNSIGNED_INT,0);
 	glBindVertexArray(0);
