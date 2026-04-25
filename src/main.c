@@ -225,91 +225,124 @@ int main(int argc, char *argv[])
 	osinit();
 
 	/* sky box shit, can relocate to better spot brain */
-	unsigned int skyVBO, skyEBO, skyVAO;
-	int skybox_width, skybox_height, skybox_nrChannels;
-	unsigned char *data;
-	unsigned int texture_skybox_id;
-	const float sky_vcoord[] = {
-		// reversed z direction cause inside cube
-		-1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,
-		1.0f, 1.0f, -1.0f,
-		-1.0f, 1.0f, -1.0f,
-		-1.0f, -1.0f, 1.0f,
-		1.0f, -1.0f, 1.0f,
-		1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f		
+	
+
+	// making shity triangle here
+	const float tri_vcoord[] = {
+		-0.5f, -0.5f, 1.0f,
+		0.5f, -0.5f, 1.0f,
+		0.0f, 0.0f, 1.0f	     		
 	};
 
-	const int sky_indices[] = {
-		0,1,2,
-		0,2,3, // front face
-		1,5,6,
-		6,2,1, // right face
-		4,5,6,
-		6,7,4, // back face
-		3,0,4,
-		4,7,3, // left face
-		3,2,6,
-		6,7,3, // top face
-		0,1,5,
-		5,4,0, // bottom face
-	};
+	unsigned triVAO, triVBO;
+     
 
-	glGenVertexArrays(1, &skyVAO);
-	glBindVertexArray(skyVAO);
-
-	glGenBuffers(1, &skyVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, skyVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(sky_vcoord),\
-		     sky_vcoord, GL_STATIC_DRAW);
+	glGenVertexArrays(1,&triVAO);
+	glBindVertexArray(triVAO);
+	
+    
+	glGenBuffers(1, &triVBO);
+	glBindBuffer(GL_ARRAY_BUFFER,  triVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(tri_vcoord), tri_vcoord, GL_STATIC_DRAW);
 		
-	glGenBuffers(1, &skyEBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, skyEBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(sky_indices),\
-		     sky_indices, GL_STATIC_DRAW);
-
 	glVertexAttribPointer(0, 3, GL_FLOAT,GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+
+	
 	
         // delocate
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-       	
-	const char* texture_faces[] = {
-	  "resource/skybox/right.jpg",
-	  "resource/skybox/left.jpg",
-	  "resource/skybox/top.jpg",
-	  "resource/skybox/bottom.jpg",
-	  "resource/skybox/back.jpg",
-	  "resource/skybox/front.jpg"};
-	glGenTextures(1, &texture_skybox_id);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, texture_skybox_id);
+	/* glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); */
+	
+	
 
-	for(int i = 0; i < 6; i++)
-	{
+	
+	/* unsigned int skyVBO, skyEBO, skyVAO; */
+	/* int skybox_width, skybox_height, skybox_nrChannels; */
+	/* unsigned char *data; */
+	/* unsigned int texture_skybox_id; */
+	/* const float sky_vcoord[] = { */
+	/* 	// reversed z direction cause inside cube */
+	/* 	-1.0f, -1.0f, -1.0f, */
+	/* 	1.0f, -1.0f, -1.0f, */
+	/* 	1.0f, 1.0f, -1.0f, */
+	/* 	-1.0f, 1.0f, -1.0f, */
+	/* 	-1.0f, -1.0f, 1.0f, */
+	/* 	1.0f, -1.0f, 1.0f, */
+	/* 	1.0f, 1.0f, 1.0f, */
+	/* 	-1.0f, 1.0f, 1.0f		 */
+	/* }; */
+
+	/* const int sky_indices[] = { */
+	/* 	0,1,2, */
+	/* 	0,2,3, // front face */
+	/* 	1,5,6, */
+	/* 	6,2,1, // right face */
+	/* 	4,5,6, */
+	/* 	6,7,4, // back face */
+	/* 	3,0,4, */
+	/* 	4,7,3, // left face */
+	/* 	3,2,6, */
+	/* 	6,7,3, // top face */
+	/* 	0,1,5, */
+	/* 	5,4,0, // bottom face */
+	/* }; */
+
+	/* glGenVertexArrays(1, &skyVAO); */
+	/* glBindVertexArray(skyVAO); */
+
+	/* glGenBuffers(1, &skyVBO); */
+	/* glBindBuffer(GL_ARRAY_BUFFER, skyVBO); */
+	/* glBufferData(GL_ARRAY_BUFFER, sizeof(sky_vcoord),\ */
+	/* 	     sky_vcoord, GL_STATIC_DRAW); */
 		
-		data = stbi_load(texture_faces[i], &skybox_width, &skybox_height, \
-				 &skybox_nrChannels, 0);
-		if(!data)
-		{
-			errormsg("invalid path for cubemap");
-			stbi_image_free(data);
-			return -1;
-		}
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, \
-			     skybox_width, skybox_height, 0,		\
-			     GL_RGB, GL_UNSIGNED_BYTE, data);
-		stbi_image_free(data);
-	  
-	}
+	/* glGenBuffers(1, &skyEBO); */
+	/* glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, skyEBO); */
+	/* glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(sky_indices),\ */
+	/* 	     sky_indices, GL_STATIC_DRAW); */
 
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	/* glVertexAttribPointer(0, 3, GL_FLOAT,GL_FALSE, 3 * sizeof(float), (void*)0); */
+	/* glEnableVertexAttribArray(0); */
+	
+        /* // delocate */
+	/* glBindBuffer(GL_ARRAY_BUFFER, 0); */
+	/* glBindVertexArray(0); */
+	/* glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); */
+       	
+	/* const char* texture_faces[] = { */
+	/*   "resource/skybox/right.jpg", */
+	/*   "resource/skybox/left.jpg", */
+	/*   "resource/skybox/top.jpg", */
+	/*   "resource/skybox/bottom.jpg", */
+	/*   "resource/skybox/back.jpg", */
+	/*   "resource/skybox/front.jpg"}; */
+	/* glGenTextures(1, &texture_skybox_id); */
+	/* glBindTexture(GL_TEXTURE_CUBE_MAP, texture_skybox_id); */
+
+	/* for(int i = 0; i < 6; i++) */
+	/* { */
+		
+	/* 	data = stbi_load(texture_faces[i], &skybox_width, &skybox_height, \ */
+	/* 			 &skybox_nrChannels, 0); */
+	/* 	if(!data) */
+	/* 	{ */
+	/* 		errormsg("invalid path for cubemap"); */
+	/* 		stbi_image_free(data); */
+	/* 		return -1; */
+	/* 	} */
+	/* 	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, \ */
+	/* 		     skybox_width, skybox_height, 0,		\ */
+	/* 		     GL_RGB, GL_UNSIGNED_BYTE, data); */
+	/* 	stbi_image_free(data); */
+	  
+	/* } */
+
+	/* glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR); */
+	/* glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR); */
+	/* glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); */
+	/* glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); */
+	// glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 	/*---------------------------------------------------- */
 
@@ -320,7 +353,7 @@ int main(int argc, char *argv[])
 		time=glfwGetTime();
 		
 
-	        render(width,height,&cam,&player,skyVAO, yaw, pitch);
+	        render(width,height,&cam,&player,triVAO, yaw, pitch);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

@@ -88,7 +88,7 @@ void render(int width, int height, struct scpCamera *camera, struct scpPlayer *p
 	glUseProgram(scpshad[0].program);
 	glUniformMatrix4fv(scpshad[0].uniforms[0], 1, GL_FALSE, &mvp[0][0]);
 	glBindVertexArray(vao); // sky vao
-	glDrawElements(GL_TRIANGLES,36,GL_UNSIGNED_INT,0);
+	glDrawArrays(GL_TRIANGLES,0, 9);
 	glBindVertexArray(0);
 	
 
