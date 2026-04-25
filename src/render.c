@@ -67,23 +67,26 @@ void render(int width, int height, struct scpCamera *camera, struct scpPlayer *p
 	}
 
 	// skybox here, render last!
-	float cos_lyaw = __builtin_cos(-lyaw * M_PI / 180.0f);
-	float sin_lyaw = __builtin_sin(-lyaw * M_PI / 180.0f);
-	float cos_lpitch = __builtin_cos(-lpitch * M_PI / 180.0f);
-	float sin_lpitch = __builtin_sin(-lpitch * M_PI / 180.0f);
+	/* float cos_lyaw = __builtin_cos(-lyaw * M_PI / 180.0f); */
+	/* float sin_lyaw = __builtin_sin(-lyaw * M_PI / 180.0f); */
+	/* float cos_lpitch = __builtin_cos(-lpitch * M_PI / 180.0f); */
+	/* float sin_lpitch = __builtin_sin(-lpitch * M_PI / 180.0f); */
 	
-	rot[0][0] = cos_lyaw; 
-	rot[0][1] = 0; 
-	rot[0][2] = sin_lyaw;
-	rot[1][0] = sin_lyaw * sin_lpitch;
-	rot[1][1] = cos_lpitch;
-	rot[1][2] = -1 * sin_lpitch * cos_lpitch;
-	rot[2][0] = -1 * sin_lpitch * sin_lyaw;
-	rot[2][1] = sin_lpitch;
-	rot[2][2] = cos_lpitch * cos_lyaw;
+	/* rot[0][0] = cos_lyaw;  */
+	/* rot[0][1] = 0;  */
+	/* rot[0][2] = sin_lyaw; */
+	/* rot[1][0] = sin_lyaw * sin_lpitch; */
+	/* rot[1][1] = cos_lpitch; */
+	/* rot[1][2] = -1 * sin_lpitch * cos_lpitch; */
+	/* rot[2][0] = -1 * sin_lpitch * sin_lyaw; */
+	/* rot[2][1] = sin_lpitch; */
+	/* rot[2][2] = cos_lpitch * cos_lyaw; */
+
+	SCP_MATRIX_CAMERA_F((*camera), mvp);
+	
 		
 	glUseProgram(scpshad[1].program);
-	glUniformMatrix3fv(scpshad[1].uniforms[1], 1, GL_FALSE, &rot[0][0]);
+	glUniformMatrix4fv(scpshad[1].uniforms[1], 1, GL_FALSE, &mvp[0][0]);
 	glBindVertexArray(vao); // sky vao
 	glDrawElements(GL_TRIANGLES,36,GL_UNSIGNED_INT,0);
 	glBindVertexArray(0);

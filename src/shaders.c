@@ -37,14 +37,14 @@ const char *const vshaders[] = {
 	"  gl_Position = mvp * vec4(pos, 1.0);\n"
 	"}", // skybox vertex shader below
 	"#version 330 core\n\n"
-	"layout (location = 0) in vec3 apos;\n"
-	"uniform mat3 rot;\n"
+	"layout (location = 0) in vec4 apos;\n"
+	"uniform mat4 rot;\n"
 	"out vec3 texcoord;\n"
 	"\n"
 	"void main(){\n"
-	" vec3 rot_pos = rot * apos;\n"
-	" texcoord  = apos;\n"
-	" gl_Position = 0.5 * vec4(rot_pos,2);\n"
+	" vec4 rot_pos = rot * apos;\n"
+	" texcoord  = apos.xyz;\n"
+	" gl_Position =  rot_pos;\n"
 	"}"
 };
 

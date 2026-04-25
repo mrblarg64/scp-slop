@@ -18,6 +18,8 @@ static float pitch = 0.0f;
 // maybe put global const window height and width here
 // cause I feel like that's a good idea
 
+struct scpCamera cam = {0};
+
 static void mouseCallback(GLFWwindow* w, double xpos, double ypos)
 {
 
@@ -25,21 +27,22 @@ static void mouseCallback(GLFWwindow* w, double xpos, double ypos)
 	
 	float xoffset = xpos - last_x;
 	float yoffset = last_y - ypos; // 0 at the top left corner
-	last_x = xpos;
-	last_y = ypos;
+	//last_x = xpos;
+	//last_y = ypos;
 
 	
 	xoffset *= 0.1f; // sensitivity set here
 	yoffset *= 0.1f;
 
-	yaw += xoffset;
-	pitch += yoffset;
+	cam.rot[0] += xoffset;
+        cam.rot[1] += yoffset;
 
 	// constraints to pitch
-	if(pitch > 89.0f)
+	if(cam.rot[1] > 89.0f)
 		pitch = 89.0f;
-	if(pitch < -89.0f)
+	if(cam.rot[1] < -89.0f)
 		pitch = -89.0f;
+
 }
 
 // this function needs to be in haskell notation, not readable as is
@@ -47,14 +50,44 @@ static void keyCallbackFunction(GLFWwindow *window, int key, int scancode, int a
 {
 	switch (key)
 	{
-	case GLFW_KEY_DOWN:
-		if (action==GLFW_PRESS)//||action==GLFW_REPEAT)
+	/* case GLFW_KEY_DOWN: */
+	/* 	if (action==GLFW_PRESS)//||action==GLFW_REPEAT) */
+	/* 	{ */
+	/* 		printf("go down\n"); */
+	/* 		//loadb3d("resource/models/173/173_2.b3d"); */
+	/* 	} */
+	/* 	break; */
+
+	case GLFW_KEY_W:
+		if (action == GLFW_PRESS || action == GLFW_REPEAT)
 		{
-			printf("go down\n");
-			//loadb3d("resource/models/173/173_2.b3d");
+			cam.pos[0] += 0.1f;
 		}
 		break;
-
+	case GLFW_KEY_A:
+		if (action == GLFW_PRESS || action == GLFW_REPEAT)
+		{
+			cam.pos[1] -= 0.1f;
+		}
+		break;
+	case GLFW_KEY_S:
+		if (action == GLFW_PRESS || action == GLFW_REPEAT)
+		{
+			cam.pos[0] -= 0.1f;
+		}
+		break;
+	case GLFW_KEY_D:
+		if (action == GLFW_PRESS || action == GLFW_REPEAT)
+		{
+			cam.pos[1] += 0.1f;
+		}
+		break;
+	case GLFW_KEY_X:
+		if (action == GLFW_PRESS || action == GLFW_REPEAT)
+		{
+		        printf("\nxyz = %f %f %f\nyaw pitch = %f %f\n", cam.pos[0], cam.pos[1], cam.pos[2], cam.rot[0], cam.rot[1]);
+		}
+		break;
 	case GLFW_KEY_ESCAPE:
 		if(action == GLFW_PRESS)
 			glfwSetWindowShouldClose(window, true);
@@ -117,7 +150,7 @@ int loadUp(GLFWwindow* w, struct scpCamera* cam, struct scpPlayer* player)
 	// mouse input
       	glfwSetCursorPosCallback(w, mouseCallback);
 	// below line doesn't work in wsl, I might have to start coding in windows :-(
-	//glfwSetInputMode(w, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(w, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	
 	
 	return 0;
@@ -173,16 +206,11 @@ int main(int argc, char *argv[])
 	struct scpPlayer player;
 	//delete variables below this comment
 	//they are temporary
-	struct scpCamera cam = {0};
 
 	GLFWwindow *window;
 
 	
 	__builtin_memset(&player, 0, sizeof(player));
-
-	cam.fov = 1.65f;
-	cam.znear = 0.1f;
-	cam.zfar = 100.0f;
 	
 	window = openWindow();
 	if(window == NULL) {return -1;}
