@@ -9,11 +9,10 @@
 const char *const fshaders[] =
 {
 	"#version 330 core\n\n"
-	"in vec4 inColor;\n"
 	"out vec3 color;\n"
 	"\n"
 	"void main(void){\n"
-	"  color = vec3(inColor.x, inColor.y, inColor.z);\n"
+	"  color = vec3(1.0, 1.0, 1.0);\n"
 	"}", // skybox fragment shader below
 	"#version 330 core\n\n"
 	"in vec3 texcoord\n;" // textureDir is used to sample
@@ -27,9 +26,6 @@ const char *const fshaders[] =
 const char *const vshaders[] = {
 	"#version 330 core\n\n"
 	"layout (location = 0) in vec3 pos;\n"
-	"layout (location = 1) in vec3 normal;\n"
-	"layout (location = 2) in vec4 color;\n"
-	"layout (location = 3) in vec2 tex;\n"
 	"uniform mat4 mvp;\n"	
 	"\n"
 	"\n"
